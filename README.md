@@ -1,6 +1,7 @@
 # travelplanner_front
+This project made by vue.js
 
-#environment
+###environment
 
 OS: Ubuntu22.04LTS
 
