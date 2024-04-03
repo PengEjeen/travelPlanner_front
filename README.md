@@ -1,5 +1,11 @@
 # travelplanner_front
 
+#environment
+OS: Ubuntu22.04LTS
+npm: v10.0.5
+node: v20.12.0  
+@vue/cli: v5.0.8
+
 ## Project setup
 ```
 npm install
