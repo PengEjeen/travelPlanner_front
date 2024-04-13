@@ -1,16 +1,16 @@
 <template>
     <div>
-        <MainPage />
+        <TheHeader />
     </div>
     <router-view />
 </template>
 
 <script>
-import MainPage from "@/components/MainPage.vue";
+import TheHeader from "@/layout/TheHeader.vue";
 
 export default {
     name: "App",
-    components: { MainPage },
+    components: { TheHeader },
 };
 </script>
 
