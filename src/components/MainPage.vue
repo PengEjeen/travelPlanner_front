@@ -57,57 +57,57 @@
   };
   </script>
   
-  <style>
-  #nav_main {
-      margin: 10px 25px;
-  }
-  
-  #top_logo {
-      float: left;
-      height: 40px;
-  }
-  
-  header .nav-link {
-      color: black !important;
-      cursor: pointer;
-  }
-  
-  header .nav-link:hover {
-      color: aquamarine !important;
-  }
-  
-  img,
-  button {
-      cursor: pointer;
-  }
-  
-  #main_searchBox {
-      display: flex;
-      margin-top: 60px;
-  }
-  
-  #main_searchBox > input {
-      width: 600px;
-      height: 60px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-right: none;
-      border-radius: 8px;
-      margin-left: 30%;
-      font-size: 18px;
-  }
-  
-  @media (max-width: 768px) {
+  <style scoped>
+#nav_main {
+    margin: 10px 25px;
+}
+
+#top_logo {
+    float: left;
+    height: 40px;
+}
+
+header .nav-link {
+    color: black !important;
+    cursor: pointer;
+}
+
+header .nav-link:hover {
+    color: aquamarine !important;
+}
+
+img,
+button {
+    cursor: pointer;
+}
+
+#main_searchCity {
+    margin-top: 60px;
+}
+
+#main_searchBox > input {
+    width: 600px;
+    height: 60px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+@media (max-width: 768px) {
       #main_searchBox > input {
           margin-left: 5%;
       }
-  }
-  
-  #main_searchBox > input:focus {
-      outline: none;
-  }
-  
-  #main_searchBox > button {
+}
+
+#main_searchBox > input:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#main_searchBox > button {
+    
       background-color: white;
       background-image: url("@/assets/search_btn.png");
       background-size: contain;
@@ -117,15 +117,21 @@
       border-left: none;
       width: 50px;
       border-radius: 8px;
+      margin-left: 1%;
   }
-  
-  #trip_type {
-      margin-top: 60px;
-      font-size: 20px;
-  }
-  
-  #trip_type .nav-link {
-      color: slategray !important;
-      cursor: pointer;
-  }
-  </style>
+
+#main_searchBox > button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+#trip_type {
+    margin-top: 20px;
+    font-size: 20px;
+}
+
+#trip_type .nav-link {
+    color: slategray !important;
+    cursor: pointer;
+}
+</style>
