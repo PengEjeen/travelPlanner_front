@@ -1,63 +1,57 @@
 <template>
-    <div>
-        <article>
-            <div>
-                <!-- 여행지 검색 구역 -->
-                <div id="main_searchCity">
-                    <h2><b>어디로 여행을 떠나시나요?</b></h2>
-                    <div>
-                        <form
-                            @submit="submit_Main_SearchBox"
-                            id="main_searchBox"
+    <article>
+        <div>
+            <!-- 여행지 검색 구역 -->
+            <div id="main_searchCity">
+                <h2><b>어디로 여행을 떠나시나요?</b></h2>
+                <div>
+                    <form @submit="submit_Main_SearchBox" id="main_searchBox">
+                        <input
+                            v-model="main_searchWord"
+                            type="search"
+                            placeholder="국가명이나 도시명을 검색하세요"
+                            required
+                        /><button
+                            @click="search"
+                            class="search-button"
+                            type="submit"
                         >
-                            <input
-                                v-model="main_searchWord"
-                                type="search"
-                                placeholder="국가명이나 도시명을 검색하세요"
-                                required
-                            /><button
-                                @click="search"
-                                class="search-button"
-                                type="submit"
-                            >
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div id="trip_type">
-                        <ul class="nav justify-content-center">
-                            <li class="nav-item">
-                                <a
-                                    id="wholeCity_word"
-                                    class="nav-link"
-                                    @click="wholeCity"
-                                    >전체</a
-                                >
-                            </li>
-                            <li class="nav-item">
-                                <a
-                                    id="homeCity_word"
-                                    class="nav-link"
-                                    @click="homeCity"
-                                    >국내</a
-                                >
-                            </li>
-                            <li class="nav-item">
-                                <a
-                                    id="foreignCity_word"
-                                    class="nav-link"
-                                    @click="foreignCity"
-                                    >해외</a
-                                >
-                            </li>
-                        </ul>
-                    </div>
-                    <div></div>
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
                 </div>
+                <div id="trip_type">
+                    <ul class="nav justify-content-center">
+                        <li class="nav-item">
+                            <a
+                                id="wholeCity_word"
+                                class="nav-link"
+                                @click="wholeCity"
+                                >전체</a
+                            >
+                        </li>
+                        <li class="nav-item">
+                            <a
+                                id="homeCity_word"
+                                class="nav-link"
+                                @click="homeCity"
+                                >국내</a
+                            >
+                        </li>
+                        <li class="nav-item">
+                            <a
+                                id="foreignCity_word"
+                                class="nav-link"
+                                @click="foreignCity"
+                                >해외</a
+                            >
+                        </li>
+                    </ul>
+                </div>
+                <div></div>
             </div>
-        </article>
-        <footer></footer>
-    </div>
+        </div>
+    </article>
 </template>
 
 <script>
@@ -76,7 +70,7 @@ export default {
 </script>
 
 <style>
-#nav_main {
+header #nav_main {
     margin: 10px 25px;
 }
 
