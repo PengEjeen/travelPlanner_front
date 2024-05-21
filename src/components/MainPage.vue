@@ -1,137 +1,127 @@
 <template>
-    <div>
-      <article>
-        <div>
-          <!-- 여행지 검색 구역 -->
-          <div id="main_searchCity">
-            <h2><b>어디로 여행을 떠나시나요?</b></h2>
-            <div>
-                <b-form @submit.prevent="submit_Main_SearchBox" id="main_searchBox">
-                    <input
-                        v-model="main_searchWord"
-                        type="search"
-                        placeholder="국가명이나 도시명을 검색하세요"
-                        required
-                    >
-                    <b-button type="submit" class="search-button">
-                        <i class="fas fa-search"></i>
-                    </b-button>
-                </b-form>
+    <section>
+        <div
+            id="carouselExampleDark"
+            class="carousel carousel-dark slide"
+            data-bs-ride="carousel"
+        >
+            <div class="carousel-indicators">
+                <button
+                    type="button"
+                    data-bs-target="#carouselExampleDark"
+                    data-bs-slide-to="0"
+                    class="active"
+                    aria-current="true"
+                    aria-label="Slide 1"
+                ></button>
+                <button
+                    type="button"
+                    data-bs-target="#carouselExampleDark"
+                    data-bs-slide-to="1"
+                    aria-label="Slide 2"
+                ></button>
+                <button
+                    type="button"
+                    data-bs-target="#carouselExampleDark"
+                    data-bs-slide-to="2"
+                    aria-label="Slide 3"
+                ></button>
+                <button
+                    type="button"
+                    data-bs-target="#carouselExampleDark"
+                    data-bs-slide-to="3"
+                    aria-label="Slide 4"
+                ></button>
+                <button
+                    type="button"
+                    data-bs-target="#carouselExampleDark"
+                    data-bs-slide-to="4"
+                    aria-label="Slide 5"
+                ></button>
             </div>
-            <div id="trip_type">
-              <b-nav pills justified>
-                <b-nav-item @click="wholeCity">전체</b-nav-item>
-                <b-nav-item @click="homeCity">국내</b-nav-item>
-                <b-nav-item @click="foreignCity">해외</b-nav-item>
-              </b-nav>
+            <div
+                id="carouselExampleAutoplaying"
+                class="carousel slide"
+                data-bs-ride="carousel"
+            >
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img
+                            src="@/assets/slide1.png"
+                            class="d-block w-100"
+                            alt="slide1"
+                        />
+                    </div>
+                    <div class="carousel-item">
+                        <img
+                            src="@/assets/slide2.jpg"
+                            class="d-block w-100"
+                            alt="slide2"
+                        />
+                    </div>
+                    <div class="carousel-item">
+                        <img
+                            src="@/assets/slide3.jpg"
+                            class="d-block w-100"
+                            alt="slide3"
+                        />
+                    </div>
+                    <div class="carousel-item">
+                        <img
+                            src="@/assets/slide4.jpg"
+                            class="carouseld-block w-100"
+                            alt="slide4"
+                        />
+                    </div>
+                    <div class="carousel-item">
+                        <img
+                            src="@/assets/slide5.png"
+                            class="d-block w-100"
+                            alt="slide5"
+                        />
+                    </div>
+                </div>
             </div>
-            <div></div>
-          </div>
         </div>
-      </article>
-      <footer></footer>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        main_searchWord: "",
-      };
-    },
-    methods: {
-      submit_Main_SearchBox() {
-        // 검색어를 서버로 제출하는 메서드
-      },
-      wholeCity() {
-        // 전체 도시에 대한 처리
-      },
-      homeCity() {
-        // 국내 도시에 대한 처리
-      },
-      foreignCity() {
-        // 해외 도시에 대한 처리
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
-#nav_main {
-    margin: 10px 25px;
+    </section>
+    <footer>
+        <p>
+            캡스톤 | 3조 <br />
+            조남영 정규민 박성엽 방유민<br />
+            한신대학교<br />
+            <span>Copyright &copy; 3조. All Rights Reserved.</span>
+        </p>
+    </footer>
+</template>
+
+<script>
+export default {};
+</script>
+
+<style>
+.carousel-indicators button {
+    border-radius: 50% !important;
+    background-color: white !important;
+    height: 15px !important;
+    width: 15px !important;
+    margin: 10px !important;
 }
 
-#top_logo {
-    float: left;
-    height: 40px;
+footer {
+    height: 140px;
+    background-color: gray;
+    text-align: left;
+    background: linear-gradient(to right, #d6f0f4, #91afe2);
 }
 
-header .nav-link {
-    color: black !important;
-    cursor: pointer;
+footer p {
+    padding-left: 50px;
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
-header .nav-link:hover {
-    color: aquamarine !important;
-}
-
-img,
-button {
-    cursor: pointer;
-}
-
-#main_searchCity {
-    margin-top: 60px;
-}
-
-#main_searchBox > input {
-    width: 600px;
-    height: 60px;
-    padding: 8px;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    font-size: 18px;
-}
-
-@media (max-width: 768px) {
-      #main_searchBox > input {
-          margin-left: 5%;
-      }
-}
-
-#main_searchBox > input:focus {
-    outline: none;
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-#main_searchBox > button {
-    
-      background-color: white;
-      background-image: url("@/assets/search_btn.png");
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      border: 1px solid #ccc;
-      border-left: none;
-      width: 50px;
-      border-radius: 8px;
-      margin-left: 1%;
-  }
-
-#main_searchBox > button:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-#trip_type {
-    margin-top: 20px;
-    font-size: 20px;
-}
-
-#trip_type .nav-link {
-    color: slategray !important;
-    cursor: pointer;
+footer p span {
+    display: inline-block;
+    margin-top: 12px;
 }
 </style>
