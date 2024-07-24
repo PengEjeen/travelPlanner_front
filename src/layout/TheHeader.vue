@@ -53,7 +53,7 @@
                             >
                         </li>
                         <li>
-                            <router-link to="/" class="dropdown-item"
+                            <router-link to="/FestivalPage" class="dropdown-item"
                                 >국내 행사 정보</router-link
                             >
                         </li>
@@ -129,7 +129,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="nav-btn">
-                            <router-link to="/" class="nav-link"
+                            <router-link to="/SignPage" class="nav-link"
                                 >회원가입</router-link
                             >
                         </button>
