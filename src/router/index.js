@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import MainPage from "@/components/MainPage.vue";
 import MyPage from "@/components/MyPage.vue";
 import GuidelinesPage from "@/components/GuidelinesPage.vue";
+import SignPage from "@/components/SignPage.vue";
+import FestivalPage from "@/components/FestivalPage.vue";
 
 const routes = [
     {
@@ -18,6 +20,16 @@ const routes = [
         path: "/GuidelinesPage",
         name: "GuidelinesPage",
         component: GuidelinesPage,
+    },
+    {
+        path: "/SignPage",
+        name: "SignPage",
+        component: SignPage,
+    },
+    {
+        path: "/FestivalPage",
+        name: "FestivalPage",
+        component: FestivalPage,
     },
 ];
 
