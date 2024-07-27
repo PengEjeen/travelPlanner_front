@@ -2,11 +2,13 @@
     <!-- 헤더 -->
     <header>
         <nav id="nav_main">
-            <img
-                src="@/assets/icons/logo.png"
-                alt="로고 이미지"
-                id="top_logo"
-            />
+            <router-link to="/">
+                <img
+                    src="@/assets/icons/logo.png"
+                    alt="로고 이미지"
+                    id="top_logo"
+                />
+            </router-link>
 
             <!-- 로그인 전 v-if="beforeLogIn"-->
             <ul class="nav justify-content-end">
@@ -53,7 +55,9 @@
                             >
                         </li>
                         <li>
-                            <router-link to="/FestivalPage" class="dropdown-item"
+                            <router-link
+                                to="/FestivalPage"
+                                class="dropdown-item"
                                 >국내 행사 정보</router-link
                             >
                         </li>
@@ -203,6 +207,11 @@
                             </div>
                             <hr />
                             <!-- 리스트 모달 일정목록 -->
+                            <!-- 일정 없을 경우 v-if="nullList"-->
+                            <div class="form-group">
+                                <h6>일정이 없어요..</h6>
+                            </div>
+                            <!-- 일정 하나라도 있을 경우 v-if="notNullList"-->
                             <div class="form-group">
                                 <h6>여행일정 1</h6>
                                 <div>
@@ -227,10 +236,13 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="nav-btn" id="makeListBtn">
-                            <router-link to="/PlannerPage" class="nav-link"
-                                >여행 추가</router-link
-                            >
+                        <button
+                            class="nav-btn"
+                            id="makeListBtn"
+                            data-bs-dismiss="modal"
+                            @click="openPlannerPage"
+                        >
+                            여행 추가
                         </button>
                     </div>
                 </div>
@@ -248,10 +260,22 @@ export default {
         };
     },
     methods: {
-        logIn() {},
-        logOut() {},
-        deleteAllList() {},
-        deleteThisList() {},
+        logIn() {
+            /* 받은 아이디와 비밀번호를 조회하여 로그인하는 코드 */
+        },
+        logOut() {
+            /*로그아웃하는 코드 */
+        },
+        deleteAllList() {
+            /* 여행 목록 모달에 뜰 모든 목록 정보 삭제하는 코드*/
+        },
+        deleteThisList() {
+            /*클릭한 라인 목록 정보 삭제하는 코드  */
+        },
+        openPlannerPage() {
+            const routeUrl = this.$router.resolve({ name: "PlannerPage" }).href;
+            window.open(routeUrl, "_blank");
+        },
     },
 };
 </script>

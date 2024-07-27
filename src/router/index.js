@@ -4,6 +4,7 @@ import MyPage from "@/components/MyPage.vue";
 import GuidelinesPage from "@/components/GuidelinesPage.vue";
 import SignPage from "@/components/SignPage.vue";
 import FestivalPage from "@/components/FestivalPage.vue";
+import PlannerPage from "@/components/PlannerPage.vue";
 
 const routes = [
     {
@@ -30,6 +31,11 @@ const routes = [
         path: "/FestivalPage",
         name: "FestivalPage",
         component: FestivalPage,
+    },
+    {
+        path: "/PlannerPage",
+        name: "PlannerPage",
+        component: PlannerPage,
     },
 ];
 
