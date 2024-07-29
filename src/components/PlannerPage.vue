@@ -40,7 +40,6 @@
                     >
                         <button>다른 일정 작성</button>
                     </div>
-                    <button @click="savePlannerPage()">저장</button>
                 </div>
             </div>
             <div class="rightContainer">
@@ -65,7 +64,7 @@
                     </button>
                 </div>
 
-                <!-- 플랜 세부 정보창-->
+                <!-- 플랜 정보창-->
                 <div class="col-8">
                     <div
                         data-bs-spy="scroll"
@@ -76,6 +75,7 @@
                         tabindex="0"
                     >
                         <div class="PlannerPlanInformationBox">
+                            <!-- 데이 정보 칸 -->
                             <!-- 일정이 없을 때 v-if="nullPlannerPlan"-->
                             <div id="simple-list-item-1" class="plannerDayFont">
                                 "<span style="color: rgba(54, 212, 222, 1)">
@@ -97,7 +97,7 @@
                                     >
                                         <button
                                             class="plannerDayMenu_memoBtn"
-                                            @click="firstFunction()"
+                                            @click="plannerDay_memo()"
                                         >
                                             <img
                                                 src="@/assets/icons/memo.png"
@@ -106,7 +106,7 @@
                                         </button>
                                         <button
                                             class="plannerDayMenu_plusDetailBoxBtn"
-                                            @click="secondFunction()"
+                                            @click="plannerDay_plusDetail(day)"
                                         >
                                             <img
                                                 src="@/assets/icons/expandPlan.png"
@@ -115,7 +115,7 @@
                                         </button>
                                         <button
                                             class="plannerDayMenu_printBtn"
-                                            @click="thirdFunction()"
+                                            @click="plannerDay_print()"
                                         >
                                             <img
                                                 src="@/assets/icons/printPlan.png"
@@ -124,7 +124,7 @@
                                         </button>
                                         <button
                                             class="plannerDayMenu_deleteBtn"
-                                            @click="fourthFunction()"
+                                            @click="plannerDay_delete(index)"
                                         >
                                             <img
                                                 src="@/assets/icons/delete.png"
@@ -145,36 +145,50 @@
                                         </button>
                                     </div>
                                 </div>
+                                <!-- 데이의 세부정보 칸 -->
                                 <div
-                                    class="plannerDetailBox plannerDetatilFont"
+                                    v-for="(detail, detailIndex) in day.details"
+                                    :key="detailIndex"
                                 >
-                                    우리 반점
-                                    <div class="plannerDetailBtnBox">
-                                        <button
-                                            class="plannerdetailMemoBtn"
-                                            type="button"
-                                            @click="plannerdetailMemo()"
-                                        >
-                                            <img
-                                                src="@/assets/icons/memo.png"
-                                                alt="세부사항 메모 이미지"
-                                            />
-                                        </button>
-                                        <button
-                                            class="plannerdetailDeleteBtn"
-                                            type="button"
-                                            @click="plannerdetailDelete()"
-                                        >
-                                            <img
-                                                src="@/assets/icons/delete.png"
-                                                alt="세부사항 삭제 이미지"
-                                            />
-                                        </button>
+                                    <div
+                                        class="plannerDetailBox plannerDetatilFont"
+                                    >
+                                        {{ detail }}
+                                        <div class="plannerDetailBtnBox">
+                                            <button
+                                                class="plannerdetailMemoBtn"
+                                                type="button"
+                                                @click="plannerdetailMemo()"
+                                            >
+                                                <img
+                                                    src="@/assets/icons/memo.png"
+                                                    alt="세부사항 메모 이미지"
+                                                />
+                                            </button>
+                                            <button
+                                                class="plannerdetailDeleteBtn"
+                                                type="button"
+                                                @click="
+                                                    plannerdetailDelete(
+                                                        day,
+                                                        detailIndex
+                                                    )
+                                                "
+                                            >
+                                                <img
+                                                    src="@/assets/icons/delete.png"
+                                                    alt="세부사항 삭제 이미지"
+                                                />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="plannerSaveBtnBox">
+                    <button @click="savePlannerPage()">저장</button>
                 </div>
             </div>
         </div>
@@ -188,12 +202,18 @@ export default {
             inputValue: "",
             inputWidth: "",
             activeMenu: null,
-            days: [1, 2, 3, 4, 5],
+            days: [
+                { details: ["Detail 1"] },
+                { details: ["Detail A"] },
+                { details: ["Detail X"] },
+                { details: ["Detail M"] },
+                { details: ["Detail P"] },
+            ],
         };
     },
     methods: {
         plusDay() {
-            this.days.push(this.days.length + 1); /*데이 칸 추가하는 코드 */
+            this.days.push({ details: [] });
         },
         savePlannerPage() {
             /*화면 정보들을 저장하는 코드 */
@@ -224,23 +244,23 @@ export default {
         toggleMenu(index) {
             this.activeMenu = this.activeMenu === index ? null : index;
         },
-        firstFunction() {
+        plannerDay_memo() {
             alert("메모 버튼 클릭됨");
         },
-        secondFunction() {
-            alert("세부사항 추가 버튼 클릭됨");
+        plannerDay_plusDetail(day) {
+            day.details.push("New Detail");
         },
-        thirdFunction() {
+        plannerDay_print() {
             alert("프린트 버튼 클릭됨");
         },
-        fourthFunction() {
-            alert("삭제 버튼 클릭됨");
+        plannerDay_delete(index) {
+            this.days.splice(index, 1);
         },
         plannerdetailMemo() {
             // 선택한 플래너 세부사항 칸 메모 코드
         },
-        plannerdetailDelete() {
-            // 선택한 플래너 세부사항 칸 삭제 코드
+        plannerdetailDelete(day, detailIndex) {
+            day.details.splice(detailIndex, 1);
         },
     },
     mounted() {
@@ -309,14 +329,10 @@ export default {
 /* 플래너페이지 스크롤스파이 바텀 Btn css */
 .plannerPlanScrollspyBottomBtnBox {
     display: flex;
-    flex-direction: row;
     position: fixed;
     bottom: 15px;
     left: 40px;
-    right: 15px;
-    width: auto;
     box-sizing: border-box;
-    justify-content: space-between;
 }
 
 .plannerPlanScrollspyBottomBtnBox button {
@@ -325,10 +341,6 @@ export default {
     border: none;
     border-radius: 5px;
     font-size: 25px;
-    width: 120px;
-}
-
-.plannerPlanScrollspyBottomBtnBox div button {
     width: 170px;
 }
 
@@ -447,5 +459,25 @@ export default {
 
 .plannerDetailBox .plannerdetailDeleteBtn {
     width: 35px;
+}
+
+/* 플래너 저장 Btn css */
+.plannerSaveBtnBox {
+    display: flex;
+    position: fixed;
+    bottom: 15px;
+    right: 40px;
+    box-sizing: border-box;
+}
+.plannerSaveBtnBox button {
+    background-color: rgba(54, 212, 222, 1);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 25px;
+    width: 120px;
+}
+.plannerSaveBtnBox button:hover {
+    background-color: #f2f2f2;
 }
 </style>
