@@ -132,16 +132,15 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="nav-btn">
-                            <router-link to="/SignPage" class="nav-link"
-                                >회원가입</router-link
-                            >
+                        <button class="nav-btn" @click="goSignPage()">
+                            회원가입
                         </button>
                         <div class="right-buttons">
-                            <button class="nav-btn">
-                                <router-link to="/" class="nav-link"
-                                    >아이디 | 비밀번호 찾기</router-link
-                                >
+                            <button
+                                class="nav-btn"
+                                @click="goFindAccountPage()"
+                            >
+                                아이디 | 비밀번호 찾기
                             </button>
                         </div>
                     </div>
@@ -179,7 +178,7 @@
                             <div class="form-group">
                                 <!-- 리스트 모달 검색바 -->
                                 <div class="listModalSearchBox">
-                                    <form class="d-flex" role="search">
+                                    <div class="d-flex" role="search">
                                         <input
                                             class="form-control me-2"
                                             type="search"
@@ -188,50 +187,62 @@
                                         <button
                                             class="btn btn-outline-success"
                                             type="submit"
+                                            @click="searchList()"
                                         >
                                             Search
                                         </button>
-                                    </form>
-                                    <button @click="deleteAllList()">
-                                        <img
-                                            src="@/assets/icons/delete.png"
-                                            alt="전부 삭제 이미지"
-                                            class="list_allDelete"
-                                        />
-                                    </button>
+                                        <button @click="deleteAllList()">
+                                            <img
+                                                src="@/assets/icons/delete.png"
+                                                alt="전부 삭제 이미지"
+                                                class="list_allDelete"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                                 <!-- 리스트 모달 검색바 끝 -->
                             </div>
                             <div class="form-group">
-                                <h3>제목</h3>
-                            </div>
-                            <hr />
-                            <!-- 리스트 모달 일정목록 -->
-                            <!-- 일정 없을 경우 v-if="nullList"-->
-                            <div class="form-group">
-                                <h6>일정이 없어요..</h6>
-                            </div>
-                            <!-- 일정 하나라도 있을 경우 v-if="notNullList"-->
-                            <div class="form-group">
-                                <h6>여행일정 1</h6>
                                 <div>
-                                    <button>
-                                        <img
-                                            src="@/assets/icons/open.png"
-                                            alt="자세히 보기 이미지"
-                                            class="list_detail"
-                                        />
-                                    </button>
-                                    <button @click="deleteThisList()">
-                                        <img
-                                            src="@/assets/icons/delete.png"
-                                            alt="삭제 이미지"
-                                            class="list_delete"
-                                        />
-                                    </button>
+                                    <h3>제목</h3>
                                 </div>
                             </div>
                             <hr />
+                            <!-- 리스트 모달 일정목록 -->
+                            <!-- 일정 없을 경우 -->
+                            <div v-if="schedules.length === 0">
+                                <div class="form-group">
+                                    <h5>일정이 없습니다.</h5>
+                                </div>
+                                <hr />
+                            </div>
+                            <!-- 일정 하나라도 있을 경우 -->
+                            <div v-if="schedules.length > 0">
+                                <div
+                                    v-for="(schedule, index) in schedules"
+                                    :key="index"
+                                    class="form-group"
+                                >
+                                    <div class="titleListBtnBox">
+                                        <h5>여행일정 {{ index + 1 }}</h5>
+                                        <button @click="showThisList()">
+                                            <img
+                                                src="@/assets/icons/open.png"
+                                                alt="자세히 보기 이미지"
+                                                class="list_detail"
+                                            />
+                                        </button>
+                                        <button @click="deleteThisList(index)">
+                                            <img
+                                                src="@/assets/icons/delete.png"
+                                                alt="삭제 이미지"
+                                                class="list_delete"
+                                            />
+                                        </button>
+                                    </div>
+                                    <hr />
+                                </div>
+                            </div>
                             <!-- 리스트 모달 일정목록 끝 -->
                         </div>
                     </div>
@@ -239,7 +250,6 @@
                         <button
                             class="nav-btn"
                             id="makeListBtn"
-                            data-bs-dismiss="modal"
                             @click="openPlannerPage"
                         >
                             여행 추가
@@ -257,6 +267,7 @@ export default {
         return {
             ID: "",
             password: "",
+            schedules: [1, 2, 3, 4],
         };
     },
     methods: {
@@ -266,11 +277,23 @@ export default {
         logOut() {
             /*로그아웃하는 코드 */
         },
-        deleteAllList() {
-            /* 여행 목록 모달에 뜰 모든 목록 정보 삭제하는 코드*/
+        goSignPage() {
+            this.$router.push({ name: "SignPage" });
         },
-        deleteThisList() {
-            /*클릭한 라인 목록 정보 삭제하는 코드  */
+        goFindAccountPage() {
+            // 아이디/비밀번호 찾기 페이지로 이동하는 코드
+        },
+        searchList() {
+            // 입력받은 검색어로 여행제목 찾는 코드
+        },
+        deleteAllList() {
+            this.schedules = [];
+        },
+        showThisList() {
+            // 현재 누른 여행 일정 짜러가는 코드
+        },
+        deleteThisList(index) {
+            this.schedules.splice(index, 1);
         },
         openPlannerPage() {
             const routeUrl = this.$router.resolve({ name: "PlannerPage" }).href;
@@ -317,7 +340,6 @@ header .nav-link:hover {
     display: inline-block;
     padding: 10px;
     background-color: transparent;
-    color: #000; /* Change color to black */
     border: none;
     border-radius: 3px;
     cursor: pointer;
@@ -325,7 +347,7 @@ header .nav-link:hover {
 }
 
 .nav-btn:hover {
-    background-color: #f2f2f2;
+    color: aquamarine;
 }
 
 /* 로그인 모달 css */
@@ -389,6 +411,7 @@ header .nav-link:hover {
     margin-top: -60px !important;
 }
 
+/* 일정짜기 모달 검색바 css */
 .listModalSearchBox {
     margin-left: 15%;
     margin-bottom: 20px;
@@ -405,17 +428,31 @@ header .nav-link:hover {
 }
 
 .listModalSearchBox .list_allDelete {
-    width: 32px;
+    margin-left: 5px;
+    width: 55px;
 }
 
-.form-group {
+/* 일정짜기 모달 리스트 css */
+.form-group div {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.form-group h6 h3 {
-    text-align: left;
+.form-group h3 {
+    margin-bottom: auto;
+}
+
+.form-group h5 {
+    margin: 0;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.form-group .titleListBtnBox {
+    display: flex;
+    gap: 20px;
 }
 
 .list_detail {
@@ -424,17 +461,5 @@ header .nav-link:hover {
 
 .list_delete {
     width: 23px;
-}
-
-.form-group h6 {
-    margin: 0;
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-}
-
-.form-group div {
-    display: flex;
-    gap: 15px;
 }
 </style>
