@@ -23,7 +23,7 @@
                                 :key="detailIndex"
                                 class="detailItems"
                             >
-                                {{ detail }}
+                                {{ detail.detail }}
                             </div>
                         </div>
                     </div>
@@ -35,7 +35,7 @@
                         :key="index"
                         class="dayItems"
                     >
-                        {{ detail }}
+                        {{ detail.detail }}
                     </div>
                 </div>
             </div>
