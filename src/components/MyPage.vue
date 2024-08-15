@@ -1,7 +1,64 @@
 <template>
     <section>
         <!-- 내 정보 확인 창 -->
-        <div></div>
+        <div class="reviseBox">
+            <div class="reviseForm">
+                <div class="header">
+                    <img
+                        src="@/assets/icons/logo.png"
+                        alt="Logo"
+                        class="revise_logo"
+                    />
+                </div>
+                <form @submit.prevent="revise">
+                    <div class="form-group">
+                        <label for="reviseUsername">아이디</label>
+                        <input
+                            type="text"
+                            id="reviseUsername"
+                            v-model="reviseUsername"
+                            placeholder="아이디를 입력하세요"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="revisePassword">비밀번호</label>
+                        <input
+                            type="text"
+                            id="revisePassword"
+                            v-model="revisePassword"
+                            placeholder="비밀번호를 입력하세요"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="revisePassword2">비밀번호 확인</label>
+                        <input
+                            type="password"
+                            id="revisePassword2"
+                            v-model="revisePassword2"
+                            placeholder="비밀번호를 다시 입력하세요"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="reviseEmail">이메일</label>
+                        <input
+                            type="email"
+                            id="reviseEmail"
+                            v-model="reviseEmail"
+                            placeholder="이메일을 입력하세요"
+                            required
+                        />
+                    </div>
+                    <div class="form-group button-group">
+                        <button type="submit" class="submit-button">
+                            수정
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- 회원 탈퇴 Btn -->
         <button
@@ -40,7 +97,12 @@
                         <p>삭제된 계정 정보는 복구하실 수 없습니다.</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="withdrawModalBtn">확인</button>
+                        <button
+                            class="withdrawModalBtn"
+                            @click="withdrawAccount()"
+                        >
+                            확인
+                        </button>
                         <button
                             class="withdrawModalBtn"
                             data-bs-dismiss="modal"
@@ -55,10 +117,99 @@
 </template>
 
 <script>
-export default {};
+export default {
+    data() {
+        return {
+            reviseUsername: "",
+            revisePassword: "",
+            revisePassword2: "",
+            reviseEmail: "",
+        };
+    },
+    methods: {
+        revise() {
+            if (this.password !== this.password2) {
+                alert("비밀번호가 일치하지 않습니다.");
+                return;
+            }
+            alert("회원님의 정보가 수정되었습니다!");
+            this.$router.push({ name: "MyPage" });
+        },
+        withdrawAccount() {
+            /*사용자 계정 삭제하는 코드 */
+        },
+    },
+};
 </script>
 
 <style>
+/* 내정보 수정 창 css */
+.reviseBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(to top right, #d4f1f9, #ffffff);
+}
+
+.reviseForm {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid gray;
+    width: 100vh;
+}
+
+.reviseBox .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.revise_logo {
+    width: 150px;
+    height: 150px;
+}
+
+.reviseBox .form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.reviseBox label {
+    width: 80px; /* Adjust the width as needed */
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.reviseBox .form-group input {
+    flex: 0.7;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.reviseBox .button-group {
+    justify-content: flex-end;
+    display: flex;
+}
+
+.reviseBox .submit-button {
+    background-color: rgba(54, 212, 222, 1);
+    border-radius: 5px;
+    font-size: 25px;
+    color: white;
+    width: 100px;
+}
+
+.reviseBox .submit-button:hover {
+    background-color: #f2f2f2;
+}
+
 /* 회원 탈퇴 버튼 css */
 #withdrawBtn {
     position: fixed;
@@ -70,7 +221,6 @@ export default {};
     border: none;
     border-radius: 5px;
     font-size: 20px;
-    cursor: pointer;
     transition: background-color 0.3s, border 0.3s;
 }
 
