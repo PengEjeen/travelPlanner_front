@@ -11,7 +11,7 @@
             <div class="col-4">
                 <div class="d-flex flex-column gap-2 text-center">
                     <a
-                        v-for="(day, index) in days"
+                        v-for="(dayGroup, index) in cells"
                         :key="index"
                         class="p-1 rounded"
                         :href="'#simple-list-item-' + (index + 1)"
@@ -36,12 +36,11 @@
             <div id="plannerPlanTopItemsTitle" class="plannerPlanTopBox">
                 <input
                     type="text"
-                    ref="titleInput"
-                    v-model="inputTitleValue"
+                    ref="title"
+                    v-model="title"
                     @input="adjustTitleWidth()"
                     :style="{ width: inputTitleWidth }"
                     class="plannerPlanInputTitle"
-                    placeholder="여행 제목"
                 />
                 <!-- 프린트 버튼 -->
                 <button class="printImgBtn">
@@ -56,17 +55,14 @@
             <!-- 플랜 정보창-->
             <div class="col-8">
                 <div
-                    data-bs-spy="scroll"
-                    data-bs-target="#simple-list-example"
                     data-bs-offset="0"
                     data-bs-smooth-scroll="true"
-                    class="scrollspy-example"
                     tabindex="0"
                 >
                     <div class="PlannerPlanInformationBox">
                         <!-- 데이 정보 칸 -->
                         <!-- 일정이 없을 경우 -->
-                        <div v-if="days == null">
+                        <div v-if="!cells.length">
                             <div
                                 id="simple-list-item-1"
                                 class="plannerDayFont"
@@ -78,9 +74,9 @@
                             </div>
                         </div>
                         <!-- 일정이 있을 경우 -->
-                        <div v-if="days !== null">
+                        <div v-else>
                             <div
-                                v-for="(day, index) in days"
+                                v-for="(dayGroup, index) in cells"
                                 :key="index"
                                 :id="'simple-list-item-' + (index + 1)"
                             >
@@ -92,17 +88,10 @@
                                         class="plannerDayMenuBar"
                                     >
                                         <button
-                                            class="plannerDayMenu_memoBtn"
-                                            @click="plannerDay_memo(index)"
-                                        >
-                                            <img
-                                                src="@/assets/icons/memo.png"
-                                                alt="데이 메뉴바 메모 이미지"
-                                            />
-                                        </button>
-                                        <button
                                             class="plannerDayMenu_plusDetailBoxBtn"
-                                            @click="plannerDay_plusDetail(day)"
+                                            @click="
+                                                plannerDay_plusDetail(dayGroup)
+                                            "
                                         >
                                             <img
                                                 src="@/assets/icons/expandPlan.png"
@@ -127,12 +116,6 @@
                                                 alt="데이 메뉴바 삭제 이미지"
                                             />
                                         </button>
-                                        <div
-                                            v-show="activeDayMemo === index"
-                                            class="plannerDayMemoBar"
-                                        >
-                                            <input />
-                                        </div>
                                     </div>
                                     <div>
                                         <button
@@ -147,28 +130,30 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div
-                                    v-show="activeDayMemo === index"
-                                    class="plannerDayMemoBar"
-                                >
-                                    <input
-                                        type="text"
-                                        v-model="days[index].inputDayMemoValue"
-                                    />
-                                </div>
                                 <!-- 데이의 세부정보 칸 -->
                                 <div
-                                    v-for="(detail, detailIndex) in day.details"
+                                    v-for="(
+                                        detail, detailIndex
+                                    ) in dayGroup.day"
                                     :key="detailIndex"
                                 >
                                     <div
                                         class="plannerDetailBox plannerDetatilFont"
                                     >
                                         <router-link
-                                            to="/SelectDetailPage"
-                                            target="_blank"
+                                            v-if="detail.place_name"
+                                            :to="
+                                                '/SelectDetailPage?place_id=' +
+                                                detail.place_id
+                                            "
                                         >
-                                            {{ detail.detail }}
+                                            {{ detail.place_name }}
+                                        </router-link>
+                                        <router-link
+                                            v-else
+                                            to="/SelectDetailPage"
+                                        >
+                                            세부일정 추가하기
                                         </router-link>
                                         <div class="plannerDetailBtnBox">
                                             <button
@@ -176,7 +161,7 @@
                                                 type="button"
                                                 @click="
                                                     plannerdetailMemo(
-                                                        dayIndex,
+                                                        index,
                                                         detailIndex
                                                     )
                                                 "
@@ -191,7 +176,7 @@
                                                 type="button"
                                                 @click="
                                                     plannerdetailDelete(
-                                                        day,
+                                                        dayGroup,
                                                         detailIndex
                                                     )
                                                 "
@@ -205,7 +190,8 @@
                                     </div>
                                     <div
                                         v-show="
-                                            activeDetailMemo.day === dayIndex &&
+                                            activeDetailMemo.dayGroup ===
+                                                index &&
                                             activeDetailMemo.detailIndex ===
                                                 detailIndex
                                         "
@@ -213,9 +199,7 @@
                                     >
                                         <input
                                             type="text"
-                                            v-model="
-                                                detail.inputDetailMemoValue
-                                            "
+                                            v-model="detail.memo"
                                         />
                                     </div>
                                 </div>
@@ -232,77 +216,52 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from "vuex";
+
 export default {
+    computed: {
+        ...mapGetters(["userId"]),
+        user_id() {
+            return this.userId;
+        },
+    },
     data() {
         return {
-            inputTitleValue: "",
+            planner_id: null,
             inputTitleWidth: "",
+            title: null,
             activeMenu: null,
-            activeDayMemo: null,
-            activeDetailMemo: { day: null, detailIndex: null },
-            days: [
-                {
-                    details: [
-                        {
-                            detail: "Detail 1",
-                            inputDetailMemoValue: "Detail 1 memo",
-                        },
-                    ],
-                    inputDayMemoValue: "Day 1 memo",
-                },
-                {
-                    details: [
-                        {
-                            detail: "Detail A",
-                            inputDetailMemoValue: "Detail 2 memo",
-                        },
-                    ],
-                    inputDayMemoValue: "Day 2 memo",
-                },
-                {
-                    details: [
-                        {
-                            detail: "Detail X",
-                            inputDetailMemoValue: "Detail 3 memo",
-                        },
-                    ],
-                    inputDayMemoValue: "Day 3 memo",
-                },
-                {
-                    details: [
-                        {
-                            detail: "Detail M",
-                            inputDetailMemoValue: "Detail 4 memo",
-                        },
-                    ],
-                    inputDayMemoValue: "Day 4 memo",
-                },
-                {
-                    details: [
-                        {
-                            detail: "Detail p",
-                            inputDetailMemoValue: "Detail 5 memo",
-                        },
-                    ],
-                    inputDayMemoValue: "Day 5 memo",
-                },
-            ],
+            activeDetailMemo: { dayGroup: null, detailIndex: null },
+            cells: [],
         };
     },
     methods: {
+        ...mapActions(["updateUserId", "removeUserId"]),
+        async fetchPlannerData(planner_id) {
+            try {
+                const response = await this.$axios.get(
+                    `http://34.64.132.0/api/planners/${planner_id}/`
+                );
+
+                console.log("Fetched Data:", response.data);
+                console.log("Planner ID:", this.planner_id);
+
+                this.cells = response.data.cells;
+                this.title = response.data.title;
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        },
         plusDay() {
-            this.days.push({
-                details: [],
-                inputDayMemoValue: "",
+            this.cells.push({
+                day: [],
             });
         },
-        savePlannerPage() {
-            /*화면 정보들을 저장하는 코드 */
-        },
+
         printPlanner() {
             const plannerData = {
-                title: this.inputTitleValue,
-                days: this.days,
+                title: this.title,
+                cells: this.cells,
             };
 
             const encodedPlannerData = encodeURIComponent(
@@ -313,9 +272,9 @@ export default {
             window.open(printPageUrl, "_blank");
         },
         adjustTitleWidth() {
-            const inputElement = this.$refs.titleInput;
+            const inputElement = this.$refs.title;
             const span = document.createElement("span");
-            span.textContent = this.inputTitleValue || inputElement.placeholder;
+            span.textContent = this.title;
             span.style.position = "absolute";
             span.style.visibility = "hidden";
             span.style.whiteSpace = "pre";
@@ -328,24 +287,22 @@ export default {
             document.body.appendChild(span);
 
             const newWidth = span.offsetWidth + 20;
-            this.inputTitleWidth = `${Math.max(newWidth, 50)}px`;
+            this.inputTitleWidth = `${Math.max(newWidth, 225)}px`;
 
             document.body.removeChild(span);
         },
         toggleMenu(index) {
             this.activeMenu = this.activeMenu === index ? null : index;
         },
-        plannerDay_memo(index) {
-            this.activeDayMemo = this.activeDayMemo === index ? null : index;
-        },
-        plannerDay_plusDetail(day) {
-            day.details.push({
-                detail: "세부일정 추가하기",
-                inputDetailMemoValue: "",
+        plannerDay_plusDetail(dayGroup) {
+            dayGroup.day.push({
+                status: 0,
+                place_id: "",
+                memo: "",
             });
         },
         plannerDay_print() {
-            const day = this.days[this.activeMenu];
+            const day = this.cells[this.activeMenu];
             const dayIndex = this.activeMenu + 1;
 
             const encodedDay = encodeURIComponent(JSON.stringify(day));
@@ -354,23 +311,64 @@ export default {
             window.open(calendarPageUrl, "_blank");
         },
         plannerDay_delete(index) {
-            this.days.splice(index, 1);
+            this.cells.splice(index, 1);
         },
-        plannerdetailMemo(dayIndex, detailIndex) {
+        plannerdetailMemo(index, detailIndex) {
             if (
-                this.activeDetailMemo.day === dayIndex &&
+                this.activeDetailMemo.dayGroup === index &&
                 this.activeDetailMemo.detailIndex === detailIndex
             ) {
-                this.activeDetailMemo = { day: null, detailIndex: null };
+                this.activeDetailMemo = { dayGroup: null, detailIndex: null };
             } else {
-                this.activeDetailMemo = { day: dayIndex, detailIndex };
+                this.activeDetailMemo = { dayGroup: index, detailIndex };
             }
+            console.log("Updated Active Detail Memo:", this.activeDetailMemo);
         },
-        plannerdetailDelete(day, detailIndex) {
-            day.details.splice(detailIndex, 1);
+        plannerdetailDelete(dayGroup, detailIndex) {
+            dayGroup.day.splice(detailIndex, 1);
+        },
+        async savePlannerPage() {
+            try {
+                const plannerData = {
+                    user_id: this.user_id,
+                    title: this.title,
+                    cells: this.cells,
+                };
+
+                console.log("readying data:", plannerData);
+
+                const response = await fetch(
+                    `http://34.64.132.0/api/planners/${this.planner_id}/update/`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json; charset=utf-8",
+                        },
+                        body: JSON.stringify(plannerData),
+                    }
+                );
+
+                console.log(
+                    "Sending JSONdata:",
+                    JSON.stringify(plannerData, null, 2)
+                );
+
+                const responseData = await response.json();
+                console.log("Response Data:", responseData);
+            } catch (error) {
+                console.error(
+                    "Error saving planner data:",
+                    error.response?.data || error.message
+                );
+            }
         },
     },
     mounted() {
+        const queryParams = new URLSearchParams(window.location.search);
+
+        this.planner_id = queryParams.get("planner_id");
+        this.fetchPlannerData(this.planner_id);
+
         this.adjustTitleWidth();
     },
 };
@@ -525,7 +523,7 @@ export default {
     border: 2px solid;
     border-radius: 3px;
     position: absolute;
-    right: 335px;
+    left: 1040px;
 }
 
 /* 플래너 데이 메뉴바 말풍선 css */
@@ -541,11 +539,6 @@ export default {
     right: -10px;
 }
 
-.plannerDayMenu_memoBtn {
-    margin-left: 12px;
-    width: 35px;
-}
-
 .plannerDayMenu_plusDetailBoxBtn {
     width: 40px;
 }
@@ -556,30 +549,6 @@ export default {
 
 .plannerDayMenu_deleteBtn {
     width: 45px;
-}
-
-/* 플래너 데이 메모바 css */
-.plannerDayMemoBar {
-    background-color: white;
-    display: flex;
-    align-items: center;
-    border: 5px solid;
-    border-radius: 3px;
-    position: absolute;
-    top: 50px;
-    left: -205px;
-}
-
-/* 플래너 데이 메모바 말풍선 css */
-.plannerDayMemoBar:after {
-    border-bottom: 10px solid #484848;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 0px solid transparent;
-    content: "";
-    position: absolute;
-    left: 220px;
-    top: -10px;
 }
 
 /* 플래너 디테일 칸 css */
@@ -617,10 +586,23 @@ export default {
     background-color: white;
     display: flex;
     align-items: center;
-    border: 2px solid;
+    border: 5px solid;
     border-radius: 3px;
     position: absolute;
-    left: 1050px;
+    left: 960px;
+    font-size: 23px;
+}
+
+.plannerDetailMemoBar:after {
+    content: "";
+    position: absolute;
+    border-top: 0px solid transparent;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #484848;
+    top: -12px;
+    left: 74%;
+    transform: translateX(-50%);
 }
 
 /* 플래너 저장 Btn css */

@@ -15,7 +15,7 @@
             <div class="planListDetailBox">
                 <!-- 여행제목의 프린트일 경우 -->
                 <div v-if="plannerTitle">
-                    <div v-for="(day, index) in days" :key="index">
+                    <div v-for="(day, index) in cells" :key="index">
                         <div>
                             <div class="dayItems">Day {{ index + 1 }}</div>
                             <div
@@ -58,8 +58,8 @@ export default {
         return {
             plannerTitle: "",
             dayIndex: "",
-            days: [],
-            dayDetails: [],
+            cells: [],
+            dayDetails: null,
             images: [],
         };
     },
@@ -78,8 +78,8 @@ export default {
                 urlParams.get("plannerData")
             );
             const parsedData = JSON.parse(plannerData);
-            this.plannerTitle = parsedData.title || "여행제목";
-            this.days = parsedData.days;
+            this.plannerTitle = parsedData.title;
+            this.cells = parsedData.cells;
         } else if (urlParams.has("day")) {
             // plannerDay_print()로 넘어온 경우
             const dayData = decodeURIComponent(urlParams.get("day"));
