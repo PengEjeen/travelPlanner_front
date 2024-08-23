@@ -11,7 +11,7 @@
             </router-link>
 
             <!-- 로그인 전 v-if="beforeLogIn"-->
-            <ul class="nav justify-content-end">
+            <ul class="nav justify-content-end" v-if="!user_id">
                 <li class="nav-item">
                     <button
                         class="nav-link"
@@ -24,7 +24,7 @@
             </ul>
 
             <!-- 로그인 후 v-if="afterLogIn"-->
-            <ul class="nav justify-content-end">
+            <ul class="nav justify-content-end" v-if="user_id">
                 <li class="nav-item">
                     <button class="nav-link">이용방법</button>
                 </li>
@@ -32,6 +32,7 @@
                     class="nav-item"
                     data-bs-toggle="modal"
                     data-bs-target="#listModal"
+                    @click="fetchSchedules(user_id)"
                 >
                     <button class="nav-link">일정짜기</button>
                 </li>
@@ -160,7 +161,7 @@
             aria-labelledby="listModalLabel"
             aria-hidden="true"
         >
-            <form
+            <div
                 class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
             >
                 <div class="modal-content">
@@ -191,13 +192,6 @@
                                         >
                                             Search
                                         </button>
-                                        <button @click="deleteAllList()">
-                                            <img
-                                                src="@/assets/icons/delete.png"
-                                                alt="전부 삭제 이미지"
-                                                class="list_allDelete"
-                                            />
-                                        </button>
                                     </div>
                                 </div>
                                 <!-- 리스트 모달 검색바 끝 -->
@@ -219,13 +213,16 @@
                             <!-- 일정 하나라도 있을 경우 -->
                             <div v-if="schedules.length > 0">
                                 <div
-                                    v-for="(schedule, index) in schedules"
+                                    v-for="(title, index) in schedules"
                                     :key="index"
                                     class="form-group"
                                 >
                                     <div class="titleListBtnBox">
-                                        <h5>여행일정 {{ index + 1 }}</h5>
-                                        <button @click="showThisList()">
+                                        <h5>{{ title.title }}</h5>
+                                        <button
+                                            @click="reviseThisList(index)"
+                                            data-bs-dismiss="modal"
+                                        >
                                             <img
                                                 src="@/assets/icons/open.png"
                                                 alt="자세히 보기 이미지"
@@ -256,26 +253,68 @@
                         </button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+import { mapGetters, mapActions } from "vuex";
+
 export default {
+    computed: {
+        ...mapGetters(["userId"]),
+        user_id() {
+            return this.userId;
+        },
+    },
     data() {
         return {
+            username: "",
             ID: "",
             password: "",
-            schedules: [1, 2, 3, 4],
+            title: "",
+            planner_id: "",
+            schedules: [],
         };
     },
     methods: {
+        ...mapActions(["updateUserId", "removeUserId"]),
+        async fetchSchedules(user_id) {
+            try {
+                document.querySelector(".listModalSearchBox input").value = "";
+                this.schedules = [];
+                const response = await this.$axios.get(
+                    "http://34.64.132.0/api/planners/getPlanner/?format=json"
+                );
+                const plannerData = response.data;
+
+                console.log("API Response Data:", plannerData);
+
+                plannerData.forEach((item) => {
+                    if (item.user_id === user_id) {
+                        this.schedules.push({
+                            title: item.title,
+                            planner_id: item.planner_id,
+                        });
+                    }
+                });
+
+                if (this.schedules.length === 0) {
+                    console.log("No schedules found for the given user_id.");
+                } else {
+                    console.log("Filtered Schedules:", this.schedules);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        },
         logIn() {
-            /* 받은 아이디와 비밀번호를 조회하여 로그인하는 코드 */
+            this.updateUserId("Test user");
         },
         logOut() {
-            /*로그아웃하는 코드 */
+            this.removeUserId();
+            this.$router.push({ name: "MainPage" });
         },
         goSignPage() {
             this.$router.push({ name: "SignPage" });
@@ -283,21 +322,82 @@ export default {
         goFindAccountPage() {
             // 아이디/비밀번호 찾기 페이지로 이동하는 코드
         },
-        searchList() {
-            // 입력받은 검색어로 여행제목 찾는 코드
+        async searchList() {
+            try {
+                const searchInput = document
+                    .querySelector(".listModalSearchBox input")
+                    .value.trim();
+
+                if (searchInput === "") {
+                    await this.fetchSchedules(this.user_id);
+                    return;
+                }
+
+                const response = await this.$axios.get(
+                    `http://34.64.132.0/api/planners/getPlanner/?format=json&search=${encodeURIComponent(
+                        searchInput
+                    )}`
+                );
+                const plannerData = response.data;
+
+                this.schedules = plannerData.filter((item) =>
+                    item.title.toLowerCase().includes(searchInput.toLowerCase())
+                );
+            } catch (error) {
+                console.error("Error searching data:", error);
+            }
         },
-        deleteAllList() {
-            this.schedules = [];
-        },
-        showThisList() {
-            // 현재 누른 여행 일정 짜러가는 코드
+        reviseThisList(index) {
+            const planner_id = this.getScheduleIndexPlanner_id(index);
+
+            const plannerUrl = `/PlannerPage?planner_id=${planner_id}`;
+            window.open(plannerUrl, "_blank");
+
+            window.location.reload();
         },
         deleteThisList(index) {
+            const plannerId = this.getScheduleIndexPlanner_id(index);
+
+            const deleteUrl = `http://34.64.132.0/api/planners/${plannerId}/delete/`;
+            console.log("Delete URL:", deleteUrl);
+
+            fetch(deleteUrl, {
+                method: "DELETE",
+            });
+
             this.schedules.splice(index, 1);
         },
+        getScheduleIndexPlanner_id(index) {
+            const scheduleItem = this.schedules[index];
+            const plannerId = scheduleItem.planner_id;
+
+            return plannerId;
+        },
         openPlannerPage() {
-            const routeUrl = this.$router.resolve({ name: "PlannerPage" }).href;
-            window.open(routeUrl, "_blank");
+            const user_id = this.user_id;
+            const title = "여행 제목";
+
+            fetch("http://34.64.132.0/api/planners/planner_create/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    user_id: user_id,
+                    title: title,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const planner_id = data.planner_id;
+                    console.log("Planner created successfully:", data);
+                    const plannerUrl = `/PlannerPage?planner_id=${planner_id}`;
+                    window.open(plannerUrl, "_blank");
+                    window.location.reload();
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
         },
     },
 };
@@ -425,11 +525,6 @@ header .nav-link:hover {
 .listModalSearchBox .d-flex .btn:hover {
     background-color: rgba(54, 212, 222, 1);
     color: white;
-}
-
-.listModalSearchBox .list_allDelete {
-    margin-left: 5px;
-    width: 55px;
 }
 
 /* 일정짜기 모달 리스트 css */
