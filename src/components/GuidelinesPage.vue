@@ -38,7 +38,9 @@
                             :data-bs-target="'#flush-collapse' + index"
                             :aria-controls="'flush-collapse' + index"
                         >
-                            {{ item.title }}
+                            <strong>
+                                {{ item.title }}
+                            </strong>
                         </button>
                     </h2>
                     <div
@@ -72,16 +74,27 @@
             >
                 <div class="modal-content">
                     <div class="modal-header">
-                        <img
-                            :src="selectedCountry.flag"
-                            alt="국기 이미지"
-                            id="nationalflagImg"
-                        />
+                        <div id="nationalflagImg"></div>
                         <div>
                             <h2>{{ selectedCountry.name }}</h2>
-                            <p>기후: {{ selectedCountry.climate }}</p>
-                            <p>종교: {{ selectedCountry.religion }}</p>
-                            <p>수도: {{ selectedCountry.capital }}</p>
+                            <p>
+                                언어:
+                                <strong>
+                                    {{ selectedCountry.language }}
+                                </strong>
+                            </p>
+                            <p>
+                                종교:
+                                <strong>
+                                    {{ selectedCountry.religion }}
+                                </strong>
+                            </p>
+                            <p>
+                                수도:
+                                <strong>
+                                    {{ selectedCountry.capital }}
+                                </strong>
+                            </p>
                         </div>
                         <button
                             type="button"
@@ -123,6 +136,7 @@ export default {
             selectedCountry: {
                 name: "",
                 climate: "",
+                language: "",
                 religion: "",
                 capital: "",
                 contact: "",
@@ -147,8 +161,9 @@ export default {
                 );
 
                 console.log(response);
+                const guideData = await this.getGuideData("NoticeService2");
 
-                this.guideItems = response.data.data.map((item) => ({
+                this.guideItems = guideData.data.data.map((item) => ({
                     title: item.title,
                     content: item.txt_origin_cn,
                 }));
@@ -158,16 +173,243 @@ export default {
                 this.loading = false;
             }
         },
-        showGuideLinesDeatilModal() {
+
+        async getGuideData(apiType) {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await this.$axios.get(
+                    "http://34.64.132.0/api/polls/products/",
+                    {
+                        params: { api_type: apiType },
+                    }
+                );
+                console.log("response data: ", response);
+
+                return response;
+            } catch (err) {
+                this.error = "Failed to get data from external API";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async showGuideLinesDeatilModal() {
+            this.selectedCountry = {};
+
+            await this.fetchGuideOverviewGnrlInfoData();
+            await this.fetchGuideEntranceVisaData();
+            await this.fetchGuideLocalContactData();
+            await this.fetchGuideCountryFlagData();
+
+            console.log("국기 URL:", this.selectedCountry.flagUrl);
+
             this.selectedCountry = {
-                name: "대한민국",
-                climate: "온대 기후",
-                religion: "자유 종교",
-                capital: "서울",
-                contact: "010-1234-5678",
-                entryRequirements: "비자 필요",
-                flag: require("@/assets/icons/memo.png"),
+                name: this.putCountry,
+                language: this.selectedCountry.lang,
+                religion: this.selectedCountry.religion,
+                capital: this.selectedCountry.capital,
+                contact: this.selectedCountry.contact,
+                entryRequirements: this.selectedCountry.entryRequirements,
+                flag: this.selectedCountry.flagUrl,
             };
+
+            console.log("최종 selectedCountry:", this.selectedCountry);
+        },
+
+        async fetchGuideCountryFlagData() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await this.getGuideData("CountryFlagService2");
+
+                const countryData = response.data.data.find((item) =>
+                    [item.country_eng_nm, item.country_nm].some(
+                        (field) =>
+                            field &&
+                            field.toLowerCase() ===
+                                this.putCountry.toLowerCase()
+                    )
+                );
+                let flagUrl = "";
+
+                if (countryData) {
+                    flagUrl = countryData.download_url;
+                }
+
+                if (!flagUrl) {
+                    alert(
+                        "입력하신 정보를 찾을 수 없습니다. 페이지를 새로고침합니다."
+                    );
+                    location.reload();
+                    return;
+                }
+
+                this.selectedCountry.flagUrl = flagUrl;
+
+                console.log(`국기 URL (${this.putCountry}): ${flagUrl}`);
+
+                const flagImgElement =
+                    document.getElementById("nationalflagImg");
+                if (flagImgElement) {
+                    flagImgElement.style.backgroundImage = `url(${flagUrl})`;
+                }
+            } catch (err) {
+                this.error =
+                    "외부 API에서 국기 데이터를 가져오는데 실패했습니다.";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchGuideOverviewGnrlInfoData() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await this.getGuideData(
+                    "OverviewGnrlInfoService"
+                );
+
+                const countryData = response.data.data.find((item) =>
+                    [item.country_eng_nm, item.country_nm].some(
+                        (field) =>
+                            field &&
+                            field.toLowerCase() ===
+                                this.putCountry.toLowerCase()
+                    )
+                );
+
+                if (countryData) {
+                    const { capital, lang, religion } = countryData;
+
+                    const cleanReligion = religion
+                        ? religion
+                              .replace(/\s*\(\d+(\.\d+)?%?\)\s*/g, "")
+                              .trim()
+                        : "";
+
+                    this.selectedCountry = {
+                        capital,
+                        lang,
+                        religion: cleanReligion,
+                    };
+
+                    console.log(`Capital (${this.putCountry}): ${capital}`);
+                    console.log(`Language (${this.putCountry}): ${lang}`);
+                    console.log(
+                        `Religion (${this.putCountry}): ${cleanReligion}`
+                    );
+                } else {
+                    console.log("Country data not found.");
+                }
+            } catch (err) {
+                this.error =
+                    "외부 API에서 외국 정보 데이터를 가져오는 데 실패했습니다.";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchGuideEntranceVisaData() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await this.getGuideData(
+                    "EntranceVisaService2"
+                );
+
+                const countryData = response.data.data.find((item) =>
+                    [item.country_eng_nm, item.country_nm].some(
+                        (field) =>
+                            field &&
+                            field.toLowerCase() ===
+                                this.putCountry.toLowerCase()
+                    )
+                );
+                let visaRequirement = "정보 없음";
+                if (countryData) {
+                    visaRequirement = countryData.dplmt_pspt_visa_cn;
+                    if (visaRequirement === "X") {
+                        visaRequirement = "비자 요건 없음";
+                    }
+                }
+
+                this.selectedCountry.entryRequirements = visaRequirement;
+
+                console.log(`비자 (${this.putCountry}): ${visaRequirement}`);
+            } catch (err) {
+                this.error =
+                    "외부 API에서 입국 비자 데이터를 가져오는데 실패했습니다.";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchGuideLocalContactData() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await this.getGuideData(
+                    "LocalContactService2"
+                );
+
+                const countryData = response.data.data.find((item) =>
+                    [
+                        item.continent_eng_nm,
+                        item.continent_nm,
+                        item.country_eng_nm,
+                        item.country_nm,
+                    ].some(
+                        (field) =>
+                            field &&
+                            field.toLowerCase() ===
+                                this.putCountry.toLowerCase()
+                    )
+                );
+
+                if (countryData) {
+                    const contactRemark = countryData.contact_remark;
+                    const phoneNumber =
+                        this.extractPhoneNumberFromRemark(contactRemark);
+
+                    this.selectedCountry.contact = phoneNumber;
+
+                    console.log(
+                        `전화번호 (${this.putCountry}): ${phoneNumber}`
+                    );
+                } else {
+                    console.log(
+                        `국가 '${this.putCountry}'에 대한 정보가 없습니다.`
+                    );
+                }
+            } catch (err) {
+                this.error =
+                    "Failed to fetch local contact data from external API";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        extractPhoneNumberFromRemark(contactRemark) {
+            const phoneMatch = contactRemark.match(
+                /대표번호\(근무시간 중\)\s*:\s*([\d\s\-()]+)/
+            );
+            const emergencyMatch = contactRemark.match(
+                /긴급연락처\(사건사고 등 긴급상황 발생 시, 24시간\)\s*:\s*([\d\s\-()]+)/
+            );
+
+            if (phoneMatch) {
+                return phoneMatch[1].trim();
+            } else if (emergencyMatch) {
+                return emergencyMatch[1].trim();
+            } else {
+                return "전화번호 없음";
+            }
         },
     },
     mounted() {
@@ -228,6 +470,9 @@ export default {
 #nationalflagImg {
     width: 500px;
     height: 150px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .guideLinesDeatilModalBox .modal-header div {

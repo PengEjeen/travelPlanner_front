@@ -311,30 +311,27 @@ export default {
             }
         },
         async logIn() {
-            try {
-                // 로그인 API 호출
-                const response = await this.$axios.post(
-                    "http://34.64.132.0/api/common/login/",
-                    {
-                        username: this.username,
-                        password: this.password,
-                    }
-                );
-
-                const { token } = response.data;
-
-                if (token) {
-                    this.updateUserId(token); // `user_id`에 `token` 값을 저장
-                    this.$router.push({ name: "MainPage" }); // 로그인 후 메인 페이지로 이동
-                    alert("로그인 성공!"); 
-                    console.log("Token:", token); 
-                } else {
-                    console.error("Login failed: No token in response");
-                    alert("로그인 실패: 사용자 정보를 확인하세요.");
-                }
-            } catch (error) {
-                console.error("Login error:", error);
-            }
+            this.updateUserId("Test user");
+            window.location.reload();
+            // try {
+            //     const response = await this.$axios.post(
+            //         "http://34.64.132.0/api/common/login/",
+            //         {
+            //             username: this.username,
+            //             password: this.password,
+            //         }
+            //     );
+            //     const { token } = response.data;
+            //     if (token) {
+            //         this.updateUserId(token);
+            //         window.location.reload();
+            //     } else {
+            //         console.error("Login failed: No token in response");
+            //         alert("로그인 실패: 사용자 정보를 확인하세요.");
+            //     }
+            // } catch (error) {
+            //     console.error("Login error:", error);
+            // }
         },
 
         logOut() {
