@@ -3,17 +3,26 @@ import { createStore } from "vuex";
 const store = createStore({
     state() {
         return {
-            userId: sessionStorage.getItem("user_id") || null,
+            userId: localStorage.getItem("user_id") || null,
+            placeId: localStorage.getItem("place_id") || "",
         };
     },
     mutations: {
         setUserId(state, userId) {
             state.userId = userId;
-            sessionStorage.setItem("user_id", userId);
+            localStorage.setItem("user_id", userId);
         },
         clearUserId(state) {
             state.userId = null;
-            sessionStorage.removeItem("user_id");
+            localStorage.removeItem("user_id");
+        },
+        setPlaceId(state, placeId) {
+            state.placeId = placeId;
+            localStorage.setItem("place_id", placeId);
+        },
+        clearPlaceId(state) {
+            state.placeId = "";
+            localStorage.removeItem("place_id");
         },
     },
     actions: {
@@ -23,9 +32,16 @@ const store = createStore({
         removeUserId({ commit }) {
             commit("clearUserId");
         },
+        updatePlaceId({ commit }, placeId) {
+            commit("setPlaceId", placeId);
+        },
+        removePlaceId({ commit }) {
+            commit("clearPlaceId");
+        },
     },
     getters: {
         userId: (state) => state.userId,
+        placeId: (state) => state.placeId,
     },
 });
 

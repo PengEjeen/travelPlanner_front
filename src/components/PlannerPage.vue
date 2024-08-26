@@ -3,7 +3,9 @@
         <!-- 사이드 스크롤스파이 -->
         <div class="plannerPlanScrollspyBox">
             <div class="plannerPlanScrollspyHeader">
-                <div><h1>여행 제목</h1></div>
+                <div>
+                    <h1>{{ title }}</h1>
+                </div>
                 <button @click="plusDay()" class="plusDayButton">
                     + Day추가
                 </button>
@@ -18,16 +20,6 @@
                     >
                         Day {{ index + 1 }}
                     </a>
-                </div>
-            </div>
-            <!-- 저장, 다른일정 작성 Btn-->
-            <div class="plannerPlanScrollspyBottomBtnBox">
-                <div
-                    class="nav-item"
-                    data-bs-toggle="modal"
-                    data-bs-target="#listModal"
-                >
-                    <button>다른 일정 작성</button>
                 </div>
             </div>
         </div>
@@ -140,21 +132,30 @@
                                     <div
                                         class="plannerDetailBox plannerDetatilFont"
                                     >
-                                        <router-link
-                                            v-if="detail.place_name"
-                                            :to="
-                                                '/SelectDetailPage?place_id=' +
-                                                detail.place_id
+                                        <button
+                                            v-if="detail.place_id"
+                                            @click="
+                                                revisePlace_id(
+                                                    detail.place_id,
+                                                    index,
+                                                    detailIndex
+                                                )
                                             "
                                         >
-                                            {{ detail.place_name }}
-                                        </router-link>
-                                        <router-link
-                                            v-else
-                                            to="/SelectDetailPage"
+                                            {{ getPlaceName(detail.place_id) }}
+                                        </button>
+                                        <button
+                                            v-if="!detail.place_id"
+                                            @click="
+                                                revisePlace_id(
+                                                    detail.place_id,
+                                                    index,
+                                                    detailIndex
+                                                )
+                                            "
                                         >
                                             세부일정 추가하기
-                                        </router-link>
+                                        </button>
                                         <div class="plannerDetailBtnBox">
                                             <button
                                                 class="plannerdetailMemoBtn"
@@ -224,6 +225,10 @@ export default {
         user_id() {
             return this.userId;
         },
+        ...mapGetters({
+            user_id: "userId",
+            revisePlaceId: "placeId",
+        }),
     },
     data() {
         return {
@@ -233,44 +238,175 @@ export default {
             activeMenu: null,
             activeDetailMemo: { dayGroup: null, detailIndex: null },
             cells: [],
+            place_names: [],
         };
     },
     methods: {
-        ...mapActions(["updateUserId", "removeUserId"]),
+        ...mapActions([
+            "updateUserId",
+            "removeUserId",
+            "updatePlaceId",
+            "removePlaceId",
+        ]),
+
         async fetchPlannerData(planner_id) {
             try {
                 const response = await this.$axios.get(
-                    `http://34.64.132.0/api/planners/${planner_id}/`
+                    `http://34.64.132.0/api/planners/${planner_id}/`,
+                    {
+                        headers: {
+                            Accept: "application/json",
+                        },
+                    }
                 );
 
                 console.log("Fetched Data:", response.data);
                 console.log("Planner ID:", this.planner_id);
+                console.log("Planner ID:", planner_id);
 
                 this.cells = response.data.cells;
                 this.title = response.data.title;
+
+                this.adjustTitleWidth();
+
+                const placeIds = [];
+
+                this.cells.forEach((dayEntry) => {
+                    dayEntry.day.forEach((entry) => {
+                        if (entry.place_id && entry.place_id.trim() !== "") {
+                            placeIds.push({ place_id: entry.place_id });
+                        }
+                    });
+                });
+
+                if (placeIds.length > 0) {
+                    await this.fetchPlaceData(placeIds);
+                }
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         },
+
+        async fetchPlaceData(placeIds) {
+            console.log("Before placeIds:", placeIds);
+
+            const placeNames = [];
+
+            for (const { place_id } of placeIds) {
+                try {
+                    console.log(`Fetching details for place_id: ${place_id}`);
+
+                    const placeResponse = await this.$axios.get(
+                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`,
+                        {
+                            headers: {
+                                Accept: "application/json",
+                            },
+                        }
+                    );
+
+                    const placeData = placeResponse.data;
+
+                    console.log(
+                        `Response for place_id ${place_id}:`,
+                        placeData
+                    );
+
+                    const primaryType =
+                        placeData.primaryTypeDisplayName?.text ||
+                        "Type not available";
+
+                    placeNames.push({
+                        place_id: place_id,
+                        type: primaryType,
+                    });
+                } catch (error) {
+                    console.error(
+                        `Error fetching place details for ${place_id}:`,
+                        error
+                    );
+
+                    placeNames.push({
+                        place_id: place_id,
+                        type: "장소 오류",
+                    });
+                }
+            }
+
+            console.log("placeNames:", placeNames);
+
+            this.place_names = placeNames.map(({ place_id, type }) => ({
+                id: place_id,
+                name: type,
+            }));
+        },
+
+        getPlaceName(placeId) {
+            const place = this.place_names.find((p) => p.id === placeId);
+            return place ? place.name : "장소 없음";
+        },
+
+        revisePlace_id(place_id, index, detailIndex) {
+            this.updatePlaceId(place_id);
+
+            const url = `/SelectDetailPage`;
+            const selectDetailPageWindow = window.open(url, "_blank");
+
+            const interval = setInterval(() => {
+                if (selectDetailPageWindow.closed) {
+                    clearInterval(interval);
+
+                    // revisePlaceIdInfo를 로컬 스토리지에서 가져오기
+                    const revisePlaceIdInfo =
+                        localStorage.getItem("revisePlaceIdInfo");
+                    console.log("Revise PlaceId Info:", revisePlaceIdInfo);
+
+                    if (revisePlaceIdInfo) {
+                        try {
+                            const placeInfo = JSON.parse(revisePlaceIdInfo);
+                            console.log("Parsed Place Info:", placeInfo);
+
+                            const after = placeInfo.after || "";
+
+                            if (
+                                this.cells[index] &&
+                                this.cells[index].day[detailIndex]
+                            ) {
+                                const detail =
+                                    this.cells[index].day[detailIndex];
+                                console.log(
+                                    `Updating place_id at index ${index}-${detailIndex} from '${detail.place_id}' to '${after}'`
+                                );
+                                detail.place_id = after;
+
+                                localStorage.removeItem("revisePlaceIdInfo");
+                                console.log("Updated cells:", this.cells);
+                            } else {
+                                console.log(
+                                    `No detail found at index ${index}-${detailIndex}`
+                                );
+                            }
+                        } catch (error) {
+                            console.error(
+                                "Error parsing revisePlaceIdInfo:",
+                                error
+                            );
+                        }
+                    } else {
+                        console.log(
+                            "No revisePlaceIdInfo found in localStorage."
+                        );
+                    }
+                }
+            }, 100);
+        },
+
         plusDay() {
             this.cells.push({
                 day: [],
             });
         },
 
-        printPlanner() {
-            const plannerData = {
-                title: this.title,
-                cells: this.cells,
-            };
-
-            const encodedPlannerData = encodeURIComponent(
-                JSON.stringify(plannerData)
-            );
-            const printPageUrl = `/CalendarPage?plannerData=${encodedPlannerData}`;
-
-            window.open(printPageUrl, "_blank");
-        },
         adjustTitleWidth() {
             const inputElement = this.$refs.title;
             const span = document.createElement("span");
@@ -287,13 +423,15 @@ export default {
             document.body.appendChild(span);
 
             const newWidth = span.offsetWidth + 20;
-            this.inputTitleWidth = `${Math.max(newWidth, 225)}px`;
+            this.inputTitleWidth = `${Math.max(newWidth, 50)}px`;
 
             document.body.removeChild(span);
         },
+
         toggleMenu(index) {
             this.activeMenu = this.activeMenu === index ? null : index;
         },
+
         plannerDay_plusDetail(dayGroup) {
             dayGroup.day.push({
                 status: 0,
@@ -301,6 +439,7 @@ export default {
                 memo: "",
             });
         },
+
         plannerDay_print() {
             const day = this.cells[this.activeMenu];
             const dayIndex = this.activeMenu + 1;
@@ -310,9 +449,11 @@ export default {
 
             window.open(calendarPageUrl, "_blank");
         },
+
         plannerDay_delete(index) {
             this.cells.splice(index, 1);
         },
+
         plannerdetailMemo(index, detailIndex) {
             if (
                 this.activeDetailMemo.dayGroup === index &&
@@ -324,11 +465,21 @@ export default {
             }
             console.log("Updated Active Detail Memo:", this.activeDetailMemo);
         },
+
         plannerdetailDelete(dayGroup, detailIndex) {
             dayGroup.day.splice(detailIndex, 1);
         },
+
         async savePlannerPage() {
             try {
+                this.cells.forEach((day) => {
+                    day.day.forEach((item) => {
+                        if (item.place_id !== "") {
+                            item.status = 1;
+                        }
+                    });
+                });
+
                 const plannerData = {
                     user_id: this.user_id,
                     title: this.title,
@@ -355,6 +506,8 @@ export default {
 
                 const responseData = await response.json();
                 console.log("Response Data:", responseData);
+
+                alert("저장이 완료되었습니다.");
             } catch (error) {
                 console.error(
                     "Error saving planner data:",
@@ -362,14 +515,24 @@ export default {
                 );
             }
         },
+
+        handleBeforeUnload(event) {
+            const message =
+                "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+            event.returnValue = message;
+            return message;
+        },
     },
     mounted() {
+        window.addEventListener("beforeunload", this.handleBeforeUnload);
+
         const queryParams = new URLSearchParams(window.location.search);
 
         this.planner_id = queryParams.get("planner_id");
         this.fetchPlannerData(this.planner_id);
-
-        this.adjustTitleWidth();
+    },
+    beforeUnmount() {
+        window.removeEventListener("beforeunload", this.handleBeforeUnload);
     },
 };
 </script>
@@ -418,7 +581,7 @@ export default {
     margin-top: 30px;
     font-size: 23px;
     overflow: auto;
-    height: 60%;
+    height: 70%;
 }
 
 .plannerPlanScrollspyBox .col-4 a {
@@ -428,28 +591,6 @@ export default {
 
 .plannerPlanScrollspyBox .col-4 a:hover {
     color: rgba(54, 212, 222, 1);
-}
-
-/* 플래너페이지 스크롤스파이 바텀 Btn css */
-.plannerPlanScrollspyBottomBtnBox {
-    display: flex;
-    position: fixed;
-    bottom: 15px;
-    left: 40px;
-    box-sizing: border-box;
-}
-
-.plannerPlanScrollspyBottomBtnBox button {
-    background-color: rgba(54, 212, 222, 1);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 25px;
-    width: 170px;
-}
-
-.plannerPlanScrollspyBottomBtnBox button:hover {
-    background-color: #f2f2f2;
 }
 
 /* 플래너페이지 데이추가 버튼 css */
