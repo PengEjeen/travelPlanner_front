@@ -311,8 +311,10 @@ export default {
             }
         },
         async logIn() {
+            //
             this.updateUserId("Test user");
             window.location.reload();
+
             // try {
             //     const response = await this.$axios.post(
             //         "http://34.64.132.0/api/common/login/",
