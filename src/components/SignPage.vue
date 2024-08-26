@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
     data() {
         return {
@@ -70,15 +72,51 @@ export default {
         };
     },
     methods: {
-        register() {
+        async register() {
             if (this.password !== this.password2) {
                 alert("비밀번호가 일치하지 않습니다.");
                 return;
             }
-            alert("회원 가입이 완료되었습니다!");
-            this.$router.push({ name: "MainPage" });
-        },
-    },
+
+            try {
+                const response = await axios.post('http://34.64.132.0/api/common/register/', {
+                    username: this.username,
+                    password: this.password,
+                    password2: this.password2,
+                    email: this.email
+                });
+
+                console.log(response.data); // 응답 데이터 확인
+
+                if (response.status === 201) {
+                    alert("회원 가입이 완료되었습니다!");
+                    this.$router.push({ name: "MainPage" });
+                } else {
+                    alert("회원 가입에 실패했습니다.");
+                }
+                
+            } catch (error) {
+                if (error.response && error.response.data) {
+                    // 서버에서 반환된 에러 메시지 처리
+                    const errors = error.response.data;
+                    let errorMessage = "회원 가입 중 오류가 발생했습니다.";
+
+                    if (errors.username) {
+                        errorMessage = `사용자 이름 오류: ${errors.username.join(", ")}`;
+                    }else if (errors.password) {
+                        errorMessage = `비밀번호 오류: ${errors.password.join(", ")}`;
+                    }else if (errors.email) {
+                        errorMessage = `이메일 오류: ${errors.email.join(", ")}`;
+                    }
+
+                    alert(errorMessage);
+                } else {
+                    console.error("Error during registration:", error);
+                    alert("회원 가입 중 오류가 발생했습니다.");
+                }
+            }
+        }
+    }
 };
 </script>
 

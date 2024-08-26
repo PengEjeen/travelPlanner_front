@@ -10,7 +10,7 @@
                 />
             </router-link>
 
-            <!-- 로그인 전 v-if="beforeLogIn"-->
+            <!-- 로그인 전 -->
             <ul class="nav justify-content-end" v-if="!user_id">
                 <li class="nav-item">
                     <button
@@ -23,7 +23,7 @@
                 </li>
             </ul>
 
-            <!-- 로그인 후 v-if="afterLogIn"-->
+            <!-- 로그인 후 -->
             <ul class="nav justify-content-end" v-if="user_id">
                 <li class="nav-item">
                     <button class="nav-link">이용방법</button>
@@ -94,6 +94,7 @@
         >
             <form
                 class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+                @submit.prevent="logIn"
             >
                 <div class="modal-content">
                     <div class="modal-header">
@@ -114,7 +115,7 @@
                             <div class="form-group">
                                 <input
                                     type="text"
-                                    id="ID"
+                                    id="username"
                                     v-model="username"
                                     placeholder="아이디를 입력하세요"
                                 />
@@ -127,8 +128,8 @@
                                     placeholder="비밀번호를 입력하세요"
                                 />
                             </div>
-                            <button class="login-btn" @click="logIn()">
-                                <a class="nav-link">로그인</a>
+                            <button class="login-btn" type="submit">
+                                로그인
                             </button>
                         </div>
                     </div>
@@ -187,7 +188,7 @@
                                         />
                                         <button
                                             class="btn btn-outline-success"
-                                            type="submit"
+                                            type="button"
                                             @click="searchList()"
                                         >
                                             Search
@@ -309,9 +310,33 @@ export default {
                 console.error("Error fetching data:", error);
             }
         },
-        logIn() {
-            this.updateUserId("Test user");
+        async logIn() {
+            try {
+                // 로그인 API 호출
+                const response = await this.$axios.post(
+                    "http://34.64.132.0/api/common/login/",
+                    {
+                        username: this.username,
+                        password: this.password,
+                    }
+                );
+
+                const { token } = response.data;
+
+                if (token) {
+                    this.updateUserId(token); // `user_id`에 `token` 값을 저장
+                    this.$router.push({ name: "MainPage" }); // 로그인 후 메인 페이지로 이동
+                    alert("로그인 성공!"); 
+                    console.log("Token:", token); 
+                } else {
+                    console.error("Login failed: No token in response");
+                    alert("로그인 실패: 사용자 정보를 확인하세요.");
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+            }
         },
+
         logOut() {
             this.removeUserId();
             this.$router.push({ name: "MainPage" });
