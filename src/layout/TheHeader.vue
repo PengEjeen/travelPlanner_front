@@ -311,7 +311,6 @@ export default {
             }
         },
         async logIn() {
-            //
             this.updateUserId("Test user");
             window.location.reload();
 
