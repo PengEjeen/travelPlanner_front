@@ -36,11 +36,7 @@
                 />
                 <!-- 프린트 버튼 -->
                 <button class="printImgBtn">
-                    <img
-                        src="@/assets/icons/print.png"
-                        alt="프린트 이미지"
-                        @click="printPlanner()"
-                    />
+                    <img src="@/assets/icons/print.png" alt="프린트 이미지" />
                 </button>
             </div>
 
@@ -91,15 +87,6 @@
                                             />
                                         </button>
                                         <button
-                                            class="plannerDayMenu_printBtn"
-                                            @click="plannerDay_print()"
-                                        >
-                                            <img
-                                                src="@/assets/icons/printPlan.png"
-                                                alt="데이 메뉴바 프린트 이미지"
-                                            />
-                                        </button>
-                                        <button
                                             class="plannerDayMenu_deleteBtn"
                                             @click="plannerDay_delete(index)"
                                         >
@@ -113,7 +100,7 @@
                                         <button
                                             class="plannerDayMenuBtn"
                                             type="button"
-                                            @click="toggleMenu(index)"
+                                            @click="toggleDayMenu(index)"
                                         >
                                             <img
                                                 src="@/assets/icons/planMenu.png"
@@ -132,31 +119,70 @@
                                     <div
                                         class="plannerDetailBox plannerDetatilFont"
                                     >
-                                        <button
-                                            v-if="detail.place_id"
-                                            @click="
-                                                revisePlace_id(
-                                                    detail.place_id,
-                                                    index,
+                                        <div class="placeBox">
+                                            <div
+                                                :style="{
+                                                    backgroundImage: `url(${getPlacePhoto(
+                                                        detail.place_id
+                                                    )})`,
+                                                }"
+                                                class="place_photoImg"
+                                            ></div>
+                                            <button
+                                                v-if="detail.place_id"
+                                                @click="
+                                                    revisePlace_id(
+                                                        detail.place_id,
+                                                        index,
+                                                        detailIndex
+                                                    )
+                                                "
+                                            >
+                                                {{
+                                                    getPlaceName(
+                                                        detail.place_id
+                                                    )
+                                                }}
+                                            </button>
+                                            <button
+                                                v-if="!detail.place_id"
+                                                @click="
+                                                    revisePlace_id(
+                                                        detail.place_id,
+                                                        index,
+                                                        detailIndex
+                                                    )
+                                                "
+                                            >
+                                                세부일정 추가하기
+                                            </button>
+                                        </div>
+                                        <div
+                                            v-show="
+                                                activeDetailMenu.dayGroup ===
+                                                    index &&
+                                                activeDetailMenu.detailIndex ===
                                                     detailIndex
-                                                )
                                             "
+                                            class="plannerDetailBtnBar"
                                         >
-                                            {{ getPlaceName(detail.place_id) }}
-                                        </button>
-                                        <button
-                                            v-if="!detail.place_id"
-                                            @click="
-                                                revisePlace_id(
-                                                    detail.place_id,
-                                                    index,
-                                                    detailIndex
-                                                )
-                                            "
-                                        >
-                                            세부일정 추가하기
-                                        </button>
-                                        <div class="plannerDetailBtnBox">
+                                            <button
+                                                class="plannerdetailInfoBtn"
+                                                type="button"
+                                                data-bs-toggle="offcanvas"
+                                                data-bs-target="#offcanvasScrolling"
+                                                aria-controls="offcanvasScrolling"
+                                                @click="
+                                                    fetchPlannerDetailInfoData(
+                                                        detail.place_id
+                                                    )
+                                                "
+                                            >
+                                                <img
+                                                    src="@/assets/icons/showDetail.png"
+                                                    alt="세부사항 자세히 보기 이미지"
+                                                />
+                                            </button>
                                             <button
                                                 class="plannerdetailMemoBtn"
                                                 type="button"
@@ -188,6 +214,22 @@
                                                 />
                                             </button>
                                         </div>
+                                        <div class="plannerDetailMenuBtn">
+                                            <button
+                                                type="button"
+                                                @click="
+                                                    toggleDetailMenu(
+                                                        index,
+                                                        detailIndex
+                                                    )
+                                                "
+                                            >
+                                                <img
+                                                    src="@/assets/icons/planMenu.png"
+                                                    alt="데이 메뉴버튼 이미지"
+                                                />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div
                                         v-show="
@@ -203,6 +245,122 @@
                                             v-model="detail.memo"
                                         />
                                     </div>
+                                    <div
+                                        class="placeRouteBox"
+                                        v-if="
+                                            detailIndex !==
+                                            dayGroup.day.length - 1
+                                        "
+                                    >
+                                        <div class="placeRouteBox">
+                                            <div
+                                                v-for="(
+                                                    routeArray, routeIndex
+                                                ) in getPlaceRoute(
+                                                    detail.place_id
+                                                )"
+                                                :key="routeIndex"
+                                            >
+                                                <div
+                                                    v-if="
+                                                        !routeArray.transitDetails
+                                                    "
+                                                    class="route_item"
+                                                >
+                                                    <img
+                                                        src="@/assets/icons/connectRouteLine.png"
+                                                        alt="경로 수직선 이미지"
+                                                        id="connectRouteLineImg"
+                                                    />
+                                                    도보
+                                                </div>
+                                                <div
+                                                    v-if="
+                                                        routeArray.transitDetails
+                                                    "
+                                                    class="route_item"
+                                                >
+                                                    <img
+                                                        :src="
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.transitLine
+                                                                ?.vehicle
+                                                                ?.iconUri ||
+                                                            '@/assets/icons/connectRouteLine.png'
+                                                        "
+                                                        alt="경로 수직선 이미지"
+                                                        :id="
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.transitLine
+                                                                ?.vehicle
+                                                                ?.type ===
+                                                            'SUBWAY'
+                                                                ? 'connectRouteTransferImg'
+                                                                : 'connectRouteLineImg'
+                                                        "
+                                                    />
+                                                    <div class="route_details">
+                                                        <span
+                                                            id="routeLocationFont"
+                                                        >
+                                                            {{
+                                                                routeArray
+                                                                    .transitDetails
+                                                                    ?.stopDetails
+                                                                    ?.departureStop
+                                                                    ?.name
+                                                            }}
+                                                        </span>
+                                                        <div
+                                                            :style="{
+                                                                color: routeArray
+                                                                    .transitDetails
+                                                                    ?.transitLine
+                                                                    ?.color,
+                                                            }"
+                                                        >
+                                                            {{
+                                                                routeArray
+                                                                    .transitDetails
+                                                                    ?.transitLine
+                                                                    ?.name
+                                                            }}
+                                                            <span
+                                                                v-if="
+                                                                    routeArray
+                                                                        .transitDetails
+                                                                        ?.transitLine
+                                                                        ?.nameShort
+                                                                "
+                                                            >
+                                                                (
+                                                                {{
+                                                                    routeArray
+                                                                        .transitDetails
+                                                                        ?.transitLine
+                                                                        ?.nameShort
+                                                                }}
+                                                                )
+                                                            </span>
+                                                        </div>
+                                                        <span
+                                                            id="routeLocationFont"
+                                                        >
+                                                            {{
+                                                                routeArray
+                                                                    .transitDetails
+                                                                    ?.stopDetails
+                                                                    ?.arrivalStop
+                                                                    ?.name
+                                                            }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -211,6 +369,93 @@
             </div>
             <div class="plannerSaveBtnBox">
                 <button @click="savePlannerPage()">저장</button>
+            </div>
+        </div>
+        <div class="detailInfoOffcanvas">
+            <div
+                class="offcanvas offcanvas-end"
+                data-bs-scroll="true"
+                data-bs-backdrop="false"
+                tabindex="-1"
+                id="offcanvasScrolling"
+                aria-labelledby="offcanvasScrollingLabel"
+            >
+                <div class="offcanvas-header">
+                    <div>
+                        <h1>{{ selectedDetailPlace.name }}</h1>
+                        <br />
+                        <p>
+                            위치:
+                            <strong>
+                                {{ selectedDetailPlace.address }}
+                            </strong>
+                        </p>
+                        <p>
+                            별점:
+                            <strong>
+                                {{ selectedDetailPlace.rating }}
+                            </strong>
+                        </p>
+                        <p>
+                            전화 번호:
+                            <strong>
+                                {{ selectedDetailPlace.internationalPhoneNum }}
+                            </strong>
+                        </p>
+                        <p>
+                            사이트 주소:
+                            <strong>
+                                <a
+                                    :href="selectedDetailPlace.websiteUri"
+                                    target="_blank"
+                                    v-if="
+                                        selectedDetailPlace.websiteUri !==
+                                        '웹사이트 링크 없음'
+                                    "
+                                >
+                                    {{ selectedDetailPlace.websiteUri }}
+                                </a>
+                                <a v-else>
+                                    {{ selectedDetailPlace.websiteUri }}
+                                </a>
+                            </strong>
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <hr />
+                <div class="offcanvas-body">
+                    <!-- 리뷰가 있을 경우 -->
+                    <div v-if="selectedDetailPlace.reviews != ''">
+                        <div>
+                            <div
+                                v-for="(
+                                    reviews, index
+                                ) in selectedDetailPlace.reviews"
+                                :key="index"
+                            >
+                                <p>
+                                    저자: <strong> {{ reviews.author }}</strong>
+                                    <span> 별점: {{ reviews.rating }} </span>
+                                    <span>
+                                        {{ reviews.text }}
+                                    </span>
+                                </p>
+                                <hr />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 리뷰가 없을 경우 -->
+                    <div v-else>
+                        <p>리뷰가 없습니다.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -236,9 +481,20 @@ export default {
             inputTitleWidth: "",
             title: null,
             activeMenu: null,
+            activeDetailMenu: { dayGroup: null, detailIndex: null },
             activeDetailMemo: { dayGroup: null, detailIndex: null },
             cells: [],
             place_names: [],
+            place_photos: [],
+            place_routes: [],
+            selectedDetailPlace: {
+                name: "",
+                rating: "",
+                address: "",
+                internationalPhoneNum: "",
+                websiteUri: "",
+                reviews: [],
+            },
         };
     },
     methods: {
@@ -281,6 +537,8 @@ export default {
 
                 if (placeIds.length > 0) {
                     await this.fetchPlaceData(placeIds);
+                    await this.fetchPhotoData(placeIds);
+                    await this.fetchRouteData(placeIds);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -288,7 +546,7 @@ export default {
         },
 
         async fetchPlaceData(placeIds) {
-            console.log("Before placeIds:", placeIds);
+            console.log("Name placeIds:", placeIds);
 
             const placeNames = [];
 
@@ -297,12 +555,7 @@ export default {
                     console.log(`Fetching details for place_id: ${place_id}`);
 
                     const placeResponse = await this.$axios.get(
-                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`,
-                        {
-                            headers: {
-                                Accept: "application/json",
-                            },
-                        }
+                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const placeData = placeResponse.data;
@@ -312,13 +565,12 @@ export default {
                         placeData
                     );
 
-                    const primaryType =
-                        placeData.primaryTypeDisplayName?.text ||
-                        "Type not available";
+                    const primaryName =
+                        placeData.displayName?.text || "Name not available";
 
                     placeNames.push({
                         place_id: place_id,
-                        type: primaryType,
+                        name: primaryName,
                     });
                 } catch (error) {
                     console.error(
@@ -328,22 +580,243 @@ export default {
 
                     placeNames.push({
                         place_id: place_id,
-                        type: "장소 오류",
+                        name: "장소 오류",
                     });
                 }
             }
 
             console.log("placeNames:", placeNames);
 
-            this.place_names = placeNames.map(({ place_id, type }) => ({
+            this.place_names = placeNames.map(({ place_id, name }) => ({
                 id: place_id,
-                name: type,
+                name: name,
             }));
         },
 
         getPlaceName(placeId) {
             const place = this.place_names.find((p) => p.id === placeId);
             return place ? place.name : "장소 없음";
+        },
+
+        async fetchPhotoData(placeIds) {
+            console.log("Photo placeIds:", placeIds);
+
+            const placePhotos = [];
+
+            for (const { place_id } of placeIds) {
+                try {
+                    console.log(
+                        `Fetching details for photoPlaceId: ${place_id}`
+                    );
+
+                    const photoResponse = await this.$axios.get(
+                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                    );
+
+                    const photoData = photoResponse.data;
+
+                    console.log(
+                        `Response for Photo place_id ${place_id}:`,
+                        photoData
+                    );
+
+                    const photoName =
+                        photoData.photos?.length > 0
+                            ? photoData.photos[0].name
+                            : "Photo name not available";
+
+                    placePhotos.push({
+                        place_id: place_id,
+                        type: photoName,
+                    });
+                } catch (error) {
+                    console.error(
+                        `Error fetching place details photo for ${place_id}:`,
+                        error
+                    );
+
+                    placePhotos.push({
+                        place_id: place_id,
+                        type: "장소 오류",
+                    });
+                }
+            }
+
+            console.log("placePhotos:", placePhotos);
+
+            if (placePhotos.length > 0) {
+                await this.savePhotos(placePhotos);
+            }
+        },
+        async savePhotos(placePhotos) {
+            console.log(`Fetching details for placePhotos: ${placePhotos}`);
+
+            const placePhotoUrl = [];
+
+            for (const { place_id, type } of placePhotos) {
+                try {
+                    if (
+                        type === "Photo name not available" ||
+                        type === "장소 오류"
+                    ) {
+                        placePhotoUrl.push({
+                            place_id: place_id,
+                            url: require("@/assets/icons/logo.png"),
+                        });
+                        continue;
+                    }
+
+                    console.log(`Fetching details for type: ${type}`);
+
+                    const photoResponse = await this.$axios.get(
+                        `http://34.64.132.0/api/googlemaps/placePhotos/?place_url=${type}`
+                    );
+
+                    const base64Data = photoResponse.data;
+                    const photoUrl = `data:image/jpeg;base64,${base64Data}`;
+
+                    placePhotoUrl.push({
+                        place_id: place_id,
+                        url: photoUrl,
+                    });
+                } catch (error) {
+                    console.error(
+                        `Error fetching photo details for ${type}:`,
+                        error
+                    );
+
+                    placePhotoUrl.push({
+                        place_id: place_id,
+                        url: require("@/assets/icons/logo.png"),
+                    });
+                }
+            }
+
+            console.log("placePhotoUrl:", placePhotoUrl);
+
+            this.place_photos = placePhotoUrl.map(({ place_id, url }) => ({
+                id: place_id,
+                url: url,
+            }));
+        },
+
+        getPlacePhoto(placeId) {
+            const photo = this.place_photos.find((p) => p.id === placeId);
+            return photo ? photo.url : require("@/assets/icons/logo.png");
+        },
+
+        async fetchRouteData(placeIds) {
+            console.log("Address placeIds:", placeIds);
+
+            const placeAddress = [];
+
+            for (const { place_id } of placeIds) {
+                try {
+                    console.log(
+                        `Fetching details for addressPlaceId: ${place_id}`
+                    );
+
+                    const addressResponse = await this.$axios.get(
+                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                    );
+
+                    const addressData = addressResponse.data;
+
+                    console.log(
+                        `Response for address place_id: ${place_id}:`,
+                        addressResponse
+                    );
+
+                    const placeFormattedAddress =
+                        addressData.formattedAddress || "Address not available";
+
+                    placeAddress.push({
+                        place_id: place_id,
+                        address: placeFormattedAddress,
+                    });
+                } catch (error) {
+                    console.error(
+                        `Error fetching address details for ${place_id}:`,
+                        error
+                    );
+
+                    placeAddress.push({
+                        place_id: place_id,
+                        type: "주소 오류",
+                    });
+                }
+            }
+            console.log("placeAddress:", placeAddress);
+
+            if (placeAddress.length > 0) {
+                await this.saveRoutes(placeAddress);
+            }
+        },
+
+        async saveRoutes(placeAddress) {
+            console.log("Route placeIds:", placeAddress);
+
+            const placeRoutes = [];
+
+            for (let i = 0; i < placeAddress.length; i++) {
+                const { place_id, address } = placeAddress[i];
+                try {
+                    console.log(
+                        `Fetching details for routePlaceId: ${address}`
+                    );
+
+                    let destination = "";
+                    if (i < placeAddress.length - 1) {
+                        destination = placeAddress[i + 1].address;
+                        console.log(
+                            `Fetching details for routeDestination: ${destination}`
+                        );
+                    } else {
+                        continue;
+                    }
+
+                    const routeResponse = await this.$axios.get(
+                        `http://34.64.132.0/api/googlemaps/placeRoutes/?origin_text=${address}&destination_text=${destination}`
+                    );
+
+                    const placeRouteData = routeResponse.data;
+
+                    console.log(
+                        `Response for route place_id ${address}:`,
+                        placeRouteData
+                    );
+
+                    const primaryRoute =
+                        placeRouteData[0]?.legs[0]?.steps || [];
+
+                    placeRoutes.push({
+                        place_id: place_id,
+                        route: primaryRoute,
+                    });
+                } catch (error) {
+                    console.error(
+                        `Error fetching route details for ${place_id}:`,
+                        error
+                    );
+
+                    placeRoutes.push({
+                        place_id: place_id,
+                        route: "경로 오류",
+                    });
+                }
+            }
+
+            console.log("placeRoutes:", placeRoutes);
+
+            this.place_routes = placeRoutes.map(({ place_id, route }) => ({
+                id: place_id,
+                route: route,
+            }));
+        },
+
+        getPlaceRoute(placeId) {
+            const route = this.place_routes.find((p) => p.id === placeId);
+            return route ? route.route : "";
         },
 
         revisePlace_id(place_id, index, detailIndex) {
@@ -356,7 +829,6 @@ export default {
                 if (selectDetailPageWindow.closed) {
                     clearInterval(interval);
 
-                    // revisePlaceIdInfo를 로컬 스토리지에서 가져오기
                     const revisePlaceIdInfo =
                         localStorage.getItem("revisePlaceIdInfo");
                     console.log("Revise PlaceId Info:", revisePlaceIdInfo);
@@ -428,7 +900,7 @@ export default {
             document.body.removeChild(span);
         },
 
-        toggleMenu(index) {
+        toggleDayMenu(index) {
             this.activeMenu = this.activeMenu === index ? null : index;
         },
 
@@ -440,18 +912,22 @@ export default {
             });
         },
 
-        plannerDay_print() {
-            const day = this.cells[this.activeMenu];
-            const dayIndex = this.activeMenu + 1;
-
-            const encodedDay = encodeURIComponent(JSON.stringify(day));
-            const calendarPageUrl = `/CalendarPage?day=${encodedDay}&index=${dayIndex}`;
-
-            window.open(calendarPageUrl, "_blank");
-        },
-
         plannerDay_delete(index) {
             this.cells.splice(index, 1);
+        },
+
+        toggleDetailMenu(index, detailIndex) {
+            if (
+                this.activeDetailMenu.dayGroup === index &&
+                this.activeDetailMenu.detailIndex === detailIndex
+            ) {
+                this.activeDetailMenu = { dayGroup: null, detailIndex: null };
+                this.activeDetailMemo = { dayGroup: null, detailIndex: null };
+            } else {
+                this.activeDetailMenu = { dayGroup: index, detailIndex };
+                this.activeDetailMemo = { dayGroup: null, detailIndex: null };
+            }
+            console.log("Updated Active Detail Menu:", this.activeDetailMenu);
         },
 
         plannerdetailMemo(index, detailIndex) {
@@ -468,6 +944,69 @@ export default {
 
         plannerdetailDelete(dayGroup, detailIndex) {
             dayGroup.day.splice(detailIndex, 1);
+        },
+
+        async fetchPlannerDetailInfoData(place_id) {
+            console.log(`Fetching details for information: ${place_id}`);
+
+            this.selectedDetailPlace = {};
+
+            try {
+                console.log(
+                    `Fetching details for information place_id: ${place_id}`
+                );
+
+                const infoResponse = await this.$axios.get(
+                    `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                );
+
+                const infoData = infoResponse.data;
+
+                this.selectedDetailPlace.name = this.getPlaceName(place_id);
+
+                this.selectedDetailPlace.rating =
+                    infoData.rating || "평점 없음";
+
+                this.selectedDetailPlace.address =
+                    infoData.formattedAddress || "주소 없음";
+
+                this.selectedDetailPlace.internationalPhoneNum =
+                    infoData.internationalPhoneNumber || "전화번호 없음";
+
+                this.selectedDetailPlace.websiteUri =
+                    infoData.websiteUri || "웹사이트 링크 없음";
+
+                this.selectedDetailPlace.reviews = (infoData.reviews || []).map(
+                    (review) => {
+                        return {
+                            author: review.authorAttribution.displayName,
+                            rating: review.rating,
+                            text: review.originalText?.text || review.text.text,
+                        };
+                    }
+                );
+
+                console.log(
+                    `SelectedDetailPlace set: ${JSON.stringify(
+                        this.selectedDetailPlace
+                    )}`
+                );
+            } catch (error) {
+                console.error(
+                    `Error fetching place details for ${place_id}:`,
+                    error
+                );
+                this.selectedDetailPlace.rating = "평점 정보 오류";
+
+                this.selectedDetailPlace.address = "주소 정보 오류";
+
+                this.selectedDetailPlace.internationalPhoneNum =
+                    "전화번호 정보 오류";
+
+                this.selectedDetailPlace.websiteUri = "웹사이트 링크 정보 오류";
+
+                this.selectedDetailPlace.reviews = "리뷰 정보 오류";
+            }
         },
 
         async savePlannerPage() {
@@ -508,6 +1047,7 @@ export default {
                 console.log("Response Data:", responseData);
 
                 alert("저장이 완료되었습니다.");
+                this.fetchPlannerData(this.planner_id);
             } catch (error) {
                 console.error(
                     "Error saving planner data:",
@@ -618,7 +1158,7 @@ export default {
     color: black;
 }
 
-/* 플래너 프린트 버튼 css  */
+/* 플래너 프린트 이미지 css  */
 .printImgBtn img {
     width: 60px;
     height: 60px;
@@ -664,7 +1204,7 @@ export default {
     border: 2px solid;
     border-radius: 3px;
     position: absolute;
-    left: 1040px;
+    left: 1090px;
 }
 
 /* 플래너 데이 메뉴바 말풍선 css */
@@ -684,30 +1224,59 @@ export default {
     width: 40px;
 }
 
-.plannerDayMenu_printBtn {
-    width: 35px;
-}
-
 .plannerDayMenu_deleteBtn {
     width: 45px;
 }
 
-/* 플래너 디테일 칸 css */
+/* 플래너 세부사항 칸 css */
 .PlannerPlanInformationBox .plannerDetailBox {
     border: 1px solid;
     padding: 10px 15px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
-.plannerDetailBox a {
-    color: black;
-}
-
-.plannerDetailBox .plannerDetailBtnBox {
+.plannerDetailBox .placeBox {
     display: flex;
-    gap: 15px;
+    gap: 25px;
+}
+
+.plannerDetailBox .place_photoImg {
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.plannerDetailMenuBtn button img {
+    width: 35px;
+}
+
+/* 플래너 세부사항 메뉴바 css */
+.plannerDetailBtnBar {
+    background-color: white;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 2px solid;
+    border-radius: 3px;
+    position: absolute;
+    left: 1042px;
+}
+
+/* 플래너 세부사항 메뉴바 말풍선 css */
+.plannerDetailBtnBar:after {
+    content: "";
+    position: absolute;
+    border-top: 10px solid transparent;
+    border-left: 10px solid #484848;
+    border-right: 0px solid transparent;
+    border-bottom: 10px solid transparent;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -10px;
 }
 
 .PlannerPlanInformationBox .plannerDetatilFont {
@@ -715,10 +1284,14 @@ export default {
 }
 
 .plannerDetailBox .plannerdetailMemoBtn {
-    width: 25px;
+    width: 33px;
 }
 
 .plannerDetailBox .plannerdetailDeleteBtn {
+    width: 43px;
+}
+
+.plannerDetailBox .plannerdetailInfoBtn {
     width: 35px;
 }
 
@@ -727,23 +1300,85 @@ export default {
     background-color: white;
     display: flex;
     align-items: center;
-    border: 5px solid;
+    border: 7px solid;
     border-radius: 3px;
     position: absolute;
-    left: 960px;
+    left: 955px;
     font-size: 23px;
 }
 
+/* 플래너 세부사항 메모바 말풍선 css */
 .plannerDetailMemoBar:after {
     content: "";
     position: absolute;
-    border-top: 0px solid transparent;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 10px solid #484848;
-    top: -12px;
-    left: 74%;
+    border-top: px solid transparent;
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-bottom: 30px solid #484848;
+    top: -30px;
+    left: 56%;
     transform: translateX(-50%);
+}
+
+/* 세부사항 사이 루트 css */
+.placeRouteBox {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    margin-left: 20px;
+}
+
+.route_item {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+}
+
+#connectRouteLineImg {
+    width: 100px;
+    height: 70px;
+}
+
+#connectRouteTransferImg {
+    width: 100px;
+    height: 85px;
+}
+
+.route_details {
+    display: flex;
+    flex-direction: column;
+}
+
+.route_details #routeLocationFont {
+    color: rgba(54, 212, 222, 1);
+    font-weight: bold;
+}
+
+.route_details div {
+    padding: 5px 10px;
+}
+
+/* 오프 캔버스 css */
+.detailInfoOffcanvas {
+    border-radius: 5px solid !important;
+}
+
+.detailInfoOffcanvas .offcanvas-header .btn-close {
+    margin-top: -260px;
+}
+
+.detailInfoOffcanvas .offcanvas-header div p {
+    float: left;
+    margin-left: 50px;
+}
+
+.detailInfoOffcanvas .offcanvas-body {
+    float: left;
+    margin-left: 10px;
+}
+
+.detailInfoOffcanvas .offcanvas-body p span {
+    display: block;
 }
 
 /* 플래너 저장 Btn css */

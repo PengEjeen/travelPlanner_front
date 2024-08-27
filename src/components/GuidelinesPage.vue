@@ -69,7 +69,7 @@
             aria-labelledby="guideLinesDeatilModal"
             aria-hidden="true"
         >
-            <form
+            <div
                 class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
             >
                 <div class="modal-content">
@@ -122,7 +122,7 @@
                         </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </template>
@@ -135,7 +135,6 @@ export default {
             putCountry: "",
             selectedCountry: {
                 name: "",
-                climate: "",
                 language: "",
                 religion: "",
                 capital: "",
