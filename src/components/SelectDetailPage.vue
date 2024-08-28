@@ -15,7 +15,7 @@
               <div class="title">{{ item.title }}</div>
               <button class="more-button" @click="openModal(item)">더보기</button>
             </div>
-            <button class="travel-add-button">
+            <button class="travel-add-button" @click="addPlace(item.placeId)">
               <img src="@/assets/icons/plusBtn.png" alt="추가 버튼" />
             </button>
           </div>
@@ -76,37 +76,33 @@
     <!-- Google Maps iframe -->
     <div class="map-container">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d25428.453175450606!2d126.96662843227381!3d37.187005961947335!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b41b2f901fbcb%3A0xeb458e85fd258ab!2z652867mE64-MIOumrOyhsO2KuA!5e0!3m2!1sko!2skr!4v1724642292404!5m2!1sko!2skr"
-        width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3178.2903566480873!2d127.0200237762836!3d37.19333234543951!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b4116d0196943%3A0xb56a9d5a27fd63eb!2z7ZWc7Iug64yA7ZWZ6rWQ!5e0!3m2!1sko!2skr!4v1724768365740!5m2!1sko!2skr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
       </iframe>
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters, mapActions } from "vuex";
+
 export default {
+  computed: {
+    ...mapGetters({
+      user_id: "userId",
+      revisePlaceId: "placeId",
+    }),
+  },
   data() {
     return {
       isDrawerOpen: false,
       drawerIconSrc: require("@/assets/icons/drawerOpenBtn.png"),
-      address: "",
-      keyword: "",
-      travelItems: [],
       isModalOpen: false,
-      selectedTravelItem: {
-        title: '',
-        imgSrc: '',
-        rating: '', // 별점
-        formattedAddress: '', // 위치 (주소)
-        nationalPhoneNumber: '', // 전화번호
-        websiteUri: '', // 홈페이지 링크
-        reviews: [] // 리뷰 목록
-      },
-      loading: false,
-      error: null,
+      travelItems: [],
     };
   },
   methods: {
+    ...mapActions(["updatePlaceId", "removePlaceId"]),
+
     toggleDrawer() {
       this.isDrawerOpen = !this.isDrawerOpen;
       this.drawerIconSrc = require(`@/assets/icons/${this.isDrawerOpen ? "drawerCloseBtn.png" : "drawerOpenBtn.png"}`);
@@ -152,7 +148,8 @@ export default {
             formattedAddress: placeDetails.formattedAddress || '정보 없음', // 위치(주소)
             nationalPhoneNumber: placeDetails.nationalPhoneNumber || '정보 없음', // 전화번호
             websiteUri: placeDetails.websiteUri || '정보 없음', // 홈페이지 링크
-            reviews: placeDetails.reviews || [] // 리뷰 목록
+            reviews: placeDetails.reviews || [], // 리뷰 목록
+            placeId: item.placePrediction.placeId // Place ID 추가
           };
         });
       } catch (err) {
@@ -175,6 +172,11 @@ export default {
     },
     closeModal() {
       this.isModalOpen = false;
+    },
+    addPlace(placeId) {
+      console.log("Selected Place ID:", placeId);
+      this.updatePlaceId(placeId);
+      // window.close();
     },
   },
 };
@@ -362,32 +364,32 @@ input[type="text"] {
   display: flex;
   flex-direction: row; 
   width: 100%;
-  margin-bottom: 20px; /* 본문과 리뷰 간의 간격 조정 */
+  margin-bottom: 20px;
 }
 
 .modal-image {
-  flex: 0 0 40%; /* 이미지 영역의 너비를 40%로 고정 */
+  flex: 0 0 40%; 
 
 }
 
 .modal-image img {
   width: 100%;
-  height: auto; /* 비율을 유지하며 자동으로 조절 */
+  height: auto;
   border-radius: 8px;
 }
 
 .modal-details {
-  flex: 1; /* 나머지 공간을 차지하도록 설정 */
-  padding: 10px; /* 패딩 추가 */
+  flex: 1; 
+  padding: 10px; 
   display: flex;
-  flex-direction: column; /* 세부 정보 항목을 세로로 배치 */
-  justify-content: flex-start; /* 세부 정보가 상단에 정렬되도록 설정 */
-  text-align: left; /* 세부 정보 텍스트를 왼쪽으로 정렬 */
+  flex-direction: column; 
+  justify-content: flex-start; 
+  text-align: left;
 }
 
 .modal-details h2 {
   margin-top: 0;
-  margin-bottom: 10px; /* 제목과 다른 항목 사이의 간격 추가 */
+  margin-bottom: 10px; 
 }
 
 .close {
@@ -400,27 +402,26 @@ input[type="text"] {
 
 .modal-review {
   margin-top: 20px;
-  overflow-y: auto; /* 리뷰가 많을 경우 스크롤 가능하도록 설정 */
+  overflow-y: auto; 
 }
 
 .review-item {
   display: flex;
-  align-items: flex-start; /* 아이템을 상단 정렬로 설정 */
+  align-items: flex-start; 
   margin-bottom: 15px;
 }
 
 .review-author-photo {
-  display: none; /* 이미지 제거로 인해 숨김 */
+  display: none; 
 }
 
 .review-content {
   flex: 1;
-  text-align: left; /* 텍스트를 왼쪽 정렬로 설정 */
+  text-align: left; 
 }
 
-/* Google Maps iframe 스타일 */
 .map-container {
-  flex: 1; /* 나머지 공간을 차지하도록 설정 */
+  flex: 1; 
   padding: 20px;
 }
 
