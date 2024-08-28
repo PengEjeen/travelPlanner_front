@@ -36,6 +36,10 @@
           <input id="category-input" type="text" placeholder="원하시는 카테고리를 입력하세요" v-model="keyword" />
           <button class="drawer-search-button" @click="fetchTravelData">검색</button>
         </div>
+      
+        <div class="today-date">
+          <span>{{ currentDate }}</span>
+        </div>
       </div>
     </div>
 
@@ -98,7 +102,15 @@ export default {
       drawerIconSrc: require("@/assets/icons/drawerOpenBtn.png"),
       isModalOpen: false,
       travelItems: [],
+      currentDate: '', 
     };
+  },
+  created() {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0'); 
+    const year = today.getFullYear();
+    this.currentDate = `${year}-${month}-${day}`;
   },
   methods: {
     ...mapActions(["updatePlaceId", "removePlaceId"]),
@@ -112,7 +124,6 @@ export default {
       this.error = null;
 
       try {
-        // 장소 검색 API 호출
         const response = await this.$axios.get("http://34.64.132.0/api/googlemaps/searchNearPlace/", {
           params: {
             address: this.address,
@@ -120,10 +131,8 @@ export default {
           },
         });
 
-        // Place ID 목록 추출
         const placeIds = response.data.map(item => item.placePrediction.placeId);
 
-        // Place ID로 세부 정보 요청
         const placeDetailsResponses = await Promise.all(placeIds.map(placeId =>
           this.$axios.get("http://34.64.132.0/api/googlemaps/placeDetails/", {
             params: {
@@ -132,7 +141,6 @@ export default {
           })
         ));
 
-        // 응답 데이터 처리
         this.travelItems = response.data.map((item, index) => {
           const placeDetails = placeDetailsResponses[index].data;
           
@@ -220,10 +228,13 @@ export default {
   background-color: #f5f5f5;
   border-left: 1px solid #ddd;
   border-right: 1px solid #333;
+  display: flex;
+  flex-direction: column;
 }
 
 .drawer-content {
   padding: 20px;
+  flex: 1;
 }
 
 .drawer-search-boxes {
@@ -369,7 +380,6 @@ input[type="text"] {
 
 .modal-image {
   flex: 0 0 40%; 
-
 }
 
 .modal-image img {
@@ -428,5 +438,18 @@ input[type="text"] {
 iframe {
   width: 100%;
   height: 100%;
+}
+
+.today-date {
+  text-align: center;
+  padding: 10px;
+  border:1px solid #333; 
+  border-radius: 10px; 
+  background-color: #26a9ca;
+  width: 200px; 
+  height: 40px;
+  margin: 45px auto; 
+  margin-top:200px;
+  color:white;
 }
 </style>
