@@ -1,5 +1,6 @@
 <template>
     <div>
+        <!-- 검색 및 필터링 영역 -->
         <div class="festival-search">
             <div class="festival-inputBox">
                 <input
@@ -15,41 +16,41 @@
             <div class="festival-dropdown-group">
                 <div class="festival-dropdown-container">
                     <select id="dropdown1" v-model="selectedMonth">
-                        <option value="" disabled selected>시기 검색</option>
-                        <option value="january">1월</option>
-                        <option value="february">2월</option>
-                        <option value="march">3월</option>
-                        <option value="april">4월</option>
-                        <option value="may">5월</option>
-                        <option value="june">6월</option>
-                        <option value="july">7월</option>
-                        <option value="august">8월</option>
-                        <option value="september">9월</option>
-                        <option value="october">10월</option>
-                        <option value="november">11월</option>
-                        <option value="december">12월</option>
+                        <option value="">시기 검색</option>
+                        <option value="01">1월</option>
+                        <option value="02">2월</option>
+                        <option value="03">3월</option>
+                        <option value="04">4월</option>
+                        <option value="05">5월</option>
+                        <option value="06">6월</option>
+                        <option value="07">7월</option>
+                        <option value="08">8월</option>
+                        <option value="09">9월</option>
+                        <option value="10">10월</option>
+                        <option value="11">11월</option>
+                        <option value="12">12월</option>
                     </select>
                 </div>
                 <div class="festival-dropdown-container">
                     <select id="dropdown2" v-model="selectedCity">
-                        <option value="" disabled selected>도시 검색</option>
-                        <option value="seoul">서울</option>
-                        <option value="busan">부산</option>
-                        <option value="daegu">대구</option>
-                        <option value="incheon">인천</option>
-                        <option value="gwangju">광주</option>
-                        <option value="daejeon">대전</option>
-                        <option value="ulsan">울산</option>
-                        <option value="sejong">세종</option>
-                        <option value="gyeonggi">경기도</option>
-                        <option value="gangwon">강원도</option>
-                        <option value="chungbuk">충청북도</option>
-                        <option value="chungnam">충청남도</option>
-                        <option value="jeonbuk">전라북도</option>
-                        <option value="jeonnam">전라남도</option>
-                        <option value="gyeongbuk">경상북도</option>
-                        <option value="gyeongnam">경상남도</option>
-                        <option value="jeju">제주도</option>
+                        <option value="">도시 검색</option>
+                        <option value="1">서울</option>
+                        <option value="6">부산</option>
+                        <option value="4">대구</option>
+                        <option value="2">인천</option>
+                        <option value="5">광주</option>
+                        <option value="3">대전</option>
+                        <option value="7">울산</option>
+                        <option value="8">세종</option>
+                        <option value="9">경기도</option>
+                        <option value="10">강원도</option>
+                        <option value="33">충청북도</option>
+                        <option value="34">충청남도</option>
+                        <option value="37">전라북도</option>
+                        <option value="38">전라남도</option>
+                        <option value="35">경상북도</option>
+                        <option value="36">경상남도</option>
+                        <option value="39">제주도</option>
                     </select>
                 </div>
                 <button
@@ -62,6 +63,7 @@
             </div>
         </div>
 
+        <!-- 검색 결과 출력 -->
         <div class="festival-results">
             <div
                 v-for="item in items"
@@ -71,7 +73,7 @@
             >
                 <img :src="item.imageUrl" alt="축제 이미지" />
                 <div>
-                    <h3>{{ item.title }}</h3>
+                    <h4>{{ item.title }}</h4>
                     <p>{{ item.date }}</p>
                     <p>{{ item.location }}</p>
                 </div>
@@ -90,6 +92,7 @@
                 </button>
                 <div class="festival-modal-content">
                     <img
+                        v-if="selectedItem.imageUrl"
                         :src="selectedItem.imageUrl"
                         alt="축제 이미지"
                         class="festival-modal-image"
@@ -98,12 +101,10 @@
                         <h3>{{ selectedItem.title }}</h3>
                         <p>기간: {{ selectedItem.date }}</p>
                         <p>위치: {{ selectedItem.location }}</p>
-                        <p>전화번호: {{ selectedItem.phone }}</p>
-                        <p>
+                        <p v-if="selectedItem.phone">전화번호: {{ selectedItem.phone }}</p>
+                        <p v-if="selectedItem.website">
                             홈페이지:
-                            <a :href="selectedItem.website" target="_blank">{{
-                                selectedItem.website
-                            }}</a>
+                            <a :href="selectedItem.website" target="_blank">{{ selectedItem.website }}</a>
                         </p>
                     </div>
                 </div>
@@ -115,90 +116,66 @@
     </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
-
-const searchText = ref("");
-const selectedMonth = ref("");
-const selectedCity = ref("");
-const items = ref([]);
-
-const isModalOpen = ref(false);
-const selectedItem = ref(null);
-
-// 임시 데이터 설정
-onMounted(() => {
-    items.value = [
-        {
-            id: 1,
-            title: "서울 꽃 축제",
-            date: "2023-04-01 ~ 2023-04-10",
-            location: "서울",
-            imageUrl:
-                "https://minio.nculture.org/amsweb-opt/multimedia_assets/73/30127/16061/c/026_2019정선아리랑제-thumb.jpg",
-            phone: "02-123-4567",
-            website: "https://example.com/festival1",
-            description: "서울에서 열리는 아름다운 꽃 축제입니다.",
+<script>
+export default {
+    data() {
+        return {
+            searchText: '',
+            selectedMonth: '',
+            selectedCity: '',
+            items: [],
+            isModalOpen: false,
+            selectedItem: null
+        };
+    },
+    methods: {
+        formatDate(dateStr) {
+            if (!dateStr || dateStr.length !== 8) return '날짜 정보 없음';
+            const year = dateStr.slice(0, 4);
+            const month = dateStr.slice(4, 6);
+            const day = dateStr.slice(6, 8);
+            return `${year}. ${month}. ${day}`;
         },
-        {
-            id: 2,
-            title: "부산 바다 축제",
-            date: "2023-08-01 ~ 2023-08-10",
-            location: "부산",
-            imageUrl:
-                "https://minio.nculture.org/amsweb-opt/multimedia_assets/73/30127/16061/c/026_2019정선아리랑제-thumb.jpg",
-            phone: "051-123-4567",
-            website: "https://example.com/festival2",
-            description: "부산의 아름다운 바다를 즐길 수 있는 축제입니다.",
+        async fetchData() {
+            const city = this.selectedCity;
+            const month = this.selectedMonth;
+
+            let url = 'http://34.64.132.0/api/polls/products/?api_type=searchFestival1';
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                this.items = data.response.body.items.item
+                    .filter(item => {
+                        const eventStartMonth = item.eventstartdate.slice(4, 6);
+                        return (!city || item.areacode === city) && (!month || eventStartMonth === month);
+                    })
+                    .map(item => ({
+                        id: item.contentid,
+                        title: item.title,
+                        date: `${this.formatDate(item.eventstartdate)} ~ ${this.formatDate(item.eventenddate)}`,
+                        location: `${item.addr1} ${item.addr2}`,
+                        imageUrl: item.firstimage
+                    }));
+            } catch (error) {
+                console.error("데이터를 가져오는 데 실패했습니다:", error);
+            }
         },
-    ];
-});
 
-const fetchData = async () => {
-    const month = selectedMonth.value;
-    const city = selectedCity.value;
-
-    if (!month || !city) {
-        alert("시기와 도시를 선택해주세요.");
-        return;
+        openModal(item) {
+            this.selectedItem = item;
+            this.isModalOpen = true;
+        },
+        closeModal() {
+            this.isModalOpen = false;
+            this.selectedItem = null;
+        }
     }
-
-    const response = await fetch(
-        `https://api.example.com/festivals?month=${month}&city=${city}`
-    ); // 예시 URL
-    const data = await response.json();
-    items.value = data.results;
-};
-
-const fetchDataByText = async () => {
-    const area = searchText.value;
-
-    if (!area) {
-        alert("지역을 입력해주세요.");
-        return;
-    }
-
-    const response = await fetch(
-        `https://api.example.com/festivals?area=${area}`
-    ); // 예시 URL
-    const data = await response.json();
-    items.value = data.results;
-};
-
-// 모달 열기
-const openModal = (item) => {
-    selectedItem.value = item;
-    isModalOpen.value = true;
-};
-
-// 모달 닫기
-const closeModal = () => {
-    isModalOpen.value = false;
-    selectedItem.value = null;
 };
 </script>
 
-<style>
+<style scoped>
 .festival-search {
     display: flex;
     flex-direction: column;
@@ -283,19 +260,24 @@ select {
     overflow: hidden;
     text-align: center;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .festival-result-item img {
     width: 100%;
-    height: auto;
+    height: 200px; 
+    object-fit: cover; 
+    margin-bottom: 15px; 
 }
 
 .festival-result-item h3 {
-    margin: 10px 0;
+    margin: 15px 0; 
 }
-
 .festival-result-item p {
     margin: 5px 0;
+    font-size: 0.8em;
 }
 
 /* 모달 스타일 */
@@ -338,8 +320,8 @@ select {
 
 .festival-modal-image {
     max-width: 200px;
-    width: 100%;
-    height: auto;
+    height: 200px; 
+    object-fit: cover; 
 }
 
 .festival-modal-info {

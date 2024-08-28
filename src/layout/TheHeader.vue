@@ -311,28 +311,29 @@ export default {
             }
         },
         async logIn() {
-            this.updateUserId("Test user");
-            window.location.reload();
+            // this.updateUserId("Test user2");
+            // window.location.reload();
 
-            // try {
-            //     const response = await this.$axios.post(
-            //         "http://34.64.132.0/api/common/login/",
-            //         {
-            //             username: this.username,
-            //             password: this.password,
-            //         }
-            //     );
-            //     const { token } = response.data;
-            //     if (token) {
-            //         this.updateUserId(token);
-            //         window.location.reload();
-            //     } else {
-            //         console.error("Login failed: No token in response");
-            //         alert("로그인 실패: 사용자 정보를 확인하세요.");
-            //     }
-            // } catch (error) {
-            //     console.error("Login error:", error);
-            // }
+            try {
+                const response = await this.$axios.post(
+                    "http://34.64.132.0/api/common/login/",
+                    {
+                        username: this.username,
+                        password: this.password,
+                    }
+                );
+                const { token, username } = response.data;
+                if (token) {
+                    this.updateUserId(username);
+                    console.log(this.userId);
+                    window.location.reload();
+                } else {
+                    console.error("Login failed: No token in response");
+                    alert("로그인 실패: 사용자 정보를 확인하세요.");
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+            }
         },
 
         logOut() {
