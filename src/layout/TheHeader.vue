@@ -92,9 +92,8 @@
             aria-labelledby="logInModalLabel"
             aria-hidden="true"
         >
-            <form
+            <div
                 class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-                @submit.prevent="logIn"
             >
                 <div class="modal-content">
                     <div class="modal-header">
@@ -115,26 +114,35 @@
                             <div class="form-group">
                                 <input
                                     type="text"
-                                    id="username"
-                                    v-model="username"
+                                    id="loginUserid"
+                                    v-model="loginUserid"
                                     placeholder="아이디를 입력하세요"
                                 />
                             </div>
                             <div class="form-group">
                                 <input
                                     type="password"
-                                    id="password"
-                                    v-model="password"
+                                    id="loginPassword"
+                                    v-model="loginPassword"
                                     placeholder="비밀번호를 입력하세요"
                                 />
                             </div>
-                            <button class="login-btn" type="submit">
+                            <button
+                                data-bs-dismiss="modal"
+                                class="login-btn"
+                                type="submit"
+                                @click="logIn()"
+                            >
                                 로그인
                             </button>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="nav-btn" @click="goSignPage()">
+                        <button
+                            data-bs-dismiss="modal"
+                            class="nav-btn"
+                            @click="goSignPage()"
+                        >
                             회원가입
                         </button>
                         <div class="right-buttons">
@@ -147,7 +155,7 @@
                         </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -221,8 +229,8 @@
                                     <div class="titleListBtnBox">
                                         <h5>{{ title.title }}</h5>
                                         <button
-                                            @click="reviseThisList(index)"
                                             data-bs-dismiss="modal"
+                                            @click="reviseThisList(index)"
                                         >
                                             <img
                                                 src="@/assets/icons/open.png"
@@ -264,16 +272,14 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
     computed: {
-        ...mapGetters(["userId"]),
-        user_id() {
-            return this.userId;
-        },
+        ...mapGetters({
+            user_id: "userId",
+        }),
     },
     data() {
         return {
-            username: "",
-            ID: "",
-            password: "",
+            loginUserid: "",
+            loginPassword: "",
             title: "",
             planner_id: "",
             schedules: [],
@@ -301,34 +307,28 @@ export default {
                     }
                 });
 
-                if (this.schedules.length === 0) {
-                    console.log("No schedules found for the given user_id.");
-                } else {
-                    console.log("Filtered Schedules:", this.schedules);
-                }
+                console.log("Filtered Schedules:", this.schedules);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         },
         async logIn() {
-            // this.updateUserId("Test user2");
-            // window.location.reload();
-
             try {
                 const response = await this.$axios.post(
                     "http://34.64.132.0/api/common/login/",
                     {
-                        username: this.username,
-                        password: this.password,
+                        username: this.loginUserid,
+                        password: this.loginPassword,
                     }
                 );
-                const { token, username } = response.data;
-                if (token) {
+                const { username } = response.data;
+                if (username) {
                     this.updateUserId(username);
-                    console.log(this.userId);
-                    window.location.reload();
+                    console.log(username);
+                    alert("귀하의 방문을 환영합니다.");
+                    this.$router.push({ name: "MainPage" });
                 } else {
-                    console.error("Login failed: No token in response");
+                    console.error("Login failed: No username in response");
                     alert("로그인 실패: 사용자 정보를 확인하세요.");
                 }
             } catch (error) {
@@ -364,9 +364,18 @@ export default {
                 );
                 const plannerData = response.data;
 
-                this.schedules = plannerData.filter((item) =>
-                    item.title.toLowerCase().includes(searchInput.toLowerCase())
-                );
+                this.schedules = plannerData
+                    .filter(
+                        (item) =>
+                            item.user_id === this.user_id &&
+                            item.title
+                                .toLowerCase()
+                                .includes(searchInput.toLowerCase())
+                    )
+                    .map((item) => ({
+                        title: item.title,
+                        planner_id: item.planner_id,
+                    }));
             } catch (error) {
                 console.error("Error searching data:", error);
             }
@@ -376,8 +385,6 @@ export default {
 
             const plannerUrl = `/PlannerPage?planner_id=${planner_id}`;
             window.open(plannerUrl, "_blank");
-
-            window.location.reload();
         },
         deleteThisList(index) {
             const plannerId = this.getScheduleIndexPlanner_id(index);

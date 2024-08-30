@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
     data() {
@@ -79,12 +79,15 @@ export default {
             }
 
             try {
-                const response = await axios.post('http://34.64.132.0/api/common/register/', {
-                    username: this.username,
-                    password: this.password,
-                    password2: this.password2,
-                    email: this.email
-                });
+                const response = await axios.post(
+                    "http://34.64.132.0/api/common/register/",
+                    {
+                        username: this.username,
+                        password: this.password,
+                        password2: this.password2,
+                        email: this.email,
+                    }
+                );
 
                 console.log(response.data); // 응답 데이터 확인
 
@@ -94,7 +97,6 @@ export default {
                 } else {
                     alert("회원 가입에 실패했습니다.");
                 }
-                
             } catch (error) {
                 if (error.response && error.response.data) {
                     // 서버에서 반환된 에러 메시지 처리
@@ -102,11 +104,17 @@ export default {
                     let errorMessage = "회원 가입 중 오류가 발생했습니다.";
 
                     if (errors.username) {
-                        errorMessage = `사용자 이름 오류: ${errors.username.join(", ")}`;
-                    }else if (errors.password) {
-                        errorMessage = `비밀번호 오류: ${errors.password.join(", ")}`;
-                    }else if (errors.email) {
-                        errorMessage = `이메일 오류: ${errors.email.join(", ")}`;
+                        errorMessage = `사용자 이름 오류: ${errors.username.join(
+                            ", "
+                        )}`;
+                    } else if (errors.password) {
+                        errorMessage = `비밀번호 오류: ${errors.password.join(
+                            ", "
+                        )}`;
+                    } else if (errors.email) {
+                        errorMessage = `이메일 오류: ${errors.email.join(
+                            ", "
+                        )}`;
                     }
 
                     alert(errorMessage);
@@ -115,8 +123,8 @@ export default {
                     alert("회원 가입 중 오류가 발생했습니다.");
                 }
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

@@ -10,14 +10,13 @@
                         class="revise_logo"
                     />
                 </div>
-                <form @submit.prevent="revise">
+                <div>
                     <div class="form-group">
-                        <label for="reviseUsername">아이디</label>
+                        <label for="reviseUserId">아이디</label>
                         <input
                             type="text"
-                            id="reviseUsername"
-                            v-model="reviseUsername"
-                            placeholder="아이디를 입력하세요"
+                            id="reviseUserId"
+                            v-model="myInfo.reviseUserId"
                             required
                         />
                     </div>
@@ -26,18 +25,8 @@
                         <input
                             type="text"
                             id="revisePassword"
-                            v-model="revisePassword"
-                            placeholder="비밀번호를 입력하세요"
-                            required
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label for="revisePassword2">비밀번호 확인</label>
-                        <input
-                            type="password"
-                            id="revisePassword2"
-                            v-model="revisePassword2"
-                            placeholder="비밀번호를 다시 입력하세요"
+                            v-model="myInfo.revisePassword"
+                            placeholder="변경하실 비밀번호"
                             required
                         />
                     </div>
@@ -46,17 +35,20 @@
                         <input
                             type="email"
                             id="reviseEmail"
-                            v-model="reviseEmail"
-                            placeholder="이메일을 입력하세요"
+                            v-model="myInfo.reviseEmail"
                             required
                         />
                     </div>
                     <div class="form-group button-group">
-                        <button type="submit" class="submit-button">
+                        <button
+                            type="button"
+                            class="submit-button"
+                            @click="reviseMyInfo"
+                        >
                             수정
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -98,8 +90,9 @@
                     </div>
                     <div class="modal-footer">
                         <button
+                            data-bs-dismiss="modal"
                             class="withdrawModalBtn"
-                            @click="withdrawAccount()"
+                            @click="withdrawAccount"
                         >
                             확인
                         </button>
@@ -117,27 +110,121 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from "vuex";
+
 export default {
+    computed: {
+        ...mapGetters({
+            user_id: "userId",
+        }),
+    },
     data() {
         return {
-            reviseUsername: "",
-            revisePassword: "",
-            revisePassword2: "",
-            reviseEmail: "",
+            myInfo: {
+                reviseUserId: "",
+                revisePassword: "",
+                reviseEmail: "",
+            },
+            isFormDirty: true,
         };
     },
     methods: {
-        revise() {
-            if (this.password !== this.password2) {
-                alert("비밀번호가 일치하지 않습니다.");
-                return;
+        ...mapActions(["updateUserId", "removeUserId"]),
+
+        async fetchMyPageData() {
+            this.myInfo = {};
+
+            try {
+                console.log(
+                    `Fetching myPage for information user_id: ${this.user_id}`
+                );
+
+                const myInfoResponse = await this.$axios.get(
+                    `http://34.64.132.0/api/common/userinfo/${this.user_id}/`
+                );
+
+                const myInfoData = myInfoResponse.data;
+
+                this.myInfo.reviseUserId = myInfoData.username;
+                this.myInfo.reviseEmail = myInfoData.email;
+                this.myInfo.revisePassword = "";
+            } catch (error) {
+                console.error(
+                    `Error fetching myPage info for ${this.user_id}:`,
+                    error
+                );
+                this.myInfo.reviseUserId = "아이디 정보 오류";
+                this.myInfo.revisePassword = "패스워드 정보 오류";
+                this.myInfo.reviseEmail = "이메일 정보 오류";
             }
-            alert("회원님의 정보가 수정되었습니다!");
-            this.$router.push({ name: "MyPage" });
         },
-        withdrawAccount() {
-            /*사용자 계정 삭제하는 코드 */
+
+        reviseMyInfo() {
+            if (this.myInfo.revisePassword == "") {
+                alert("변경하실 비밀번호를 입력하십시오.");
+                return;
+            } else {
+                alert("회원님의 정보가 수정되었습니다.");
+                this.updateUserId(this.myInfo.reviseUserId);
+                window.location.reload();
+            }
         },
+
+        async withdrawAccount() {
+            try {
+                const deleteResponse = await this.$axios.delete(
+                    `http://34.64.132.0/api/common/delete/`,
+                    {
+                        data: {
+                            username: this.user_id,
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                console.log("Delete response:", deleteResponse.data);
+                alert("귀하의 계정 삭제가 완료되었습니다.");
+                this.isFormDirty = false;
+                this.removeUserId();
+
+                this.$router.push({ name: "MainPage" });
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert("삭제 중 오류가 발생했습니다.");
+            }
+        },
+
+        handleBeforeUnload(event) {
+            if (this.isFormDirty) {
+                const message =
+                    "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+                event.returnValue = message;
+                return message;
+            }
+        },
+    },
+    mounted() {
+        window.addEventListener("beforeunload", this.handleBeforeUnload);
+        this.fetchMyPageData();
+    },
+    beforeUnmount() {
+        window.removeEventListener("beforeunload", this.handleBeforeUnload);
+    },
+    beforeRouteLeave(to, from, next) {
+        if (!this.isFormDirty) {
+            next();
+        } else {
+            const message =
+                "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+
+            const answer = window.confirm(message);
+            if (answer) {
+                next();
+            } else {
+                next(false);
+            }
+        }
     },
 };
 </script>
@@ -181,7 +268,7 @@ export default {
 }
 
 .reviseBox label {
-    width: 80px; /* Adjust the width as needed */
+    width: 80px;
     margin-right: 10px;
     font-weight: bold;
 }
