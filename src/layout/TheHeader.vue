@@ -15,8 +15,8 @@
                 <li class="nav-item">
                     <button
                         class="nav-link"
-                        data-bs-toggle="modal"
                         data-bs-target="#logInModal"
+                        data-bs-toggle="modal"
                     >
                         로그인
                     </button>
@@ -26,7 +26,9 @@
             <!-- 로그인 후 -->
             <ul class="nav justify-content-end" v-if="user_id">
                 <li class="nav-item">
-                    <button class="nav-link">이용방법</button>
+                    <router-link to="/ManualPage" class="dropdown-item"
+                        ><button class="nav-link">이용방법</button></router-link
+                    >
                 </li>
                 <li
                     class="nav-item"
@@ -86,11 +88,9 @@
         <div
             class="modal fade"
             id="logInModal"
-            data-bs-backdrop="static"
-            data-bs-keyboard="false"
-            tabindex="-1"
-            aria-labelledby="logInModalLabel"
             aria-hidden="true"
+            aria-labelledby="logInModalLabel"
+            tabindex="-1"
         >
             <div
                 class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
@@ -130,7 +130,7 @@
                             <button
                                 data-bs-dismiss="modal"
                                 class="login-btn"
-                                type="submit"
+                                type="button"
                                 @click="logIn()"
                             >
                                 로그인
@@ -145,14 +145,13 @@
                         >
                             회원가입
                         </button>
-                        <div class="right-buttons">
+                        <!-- <div class="right-buttons">
                             <button
                                 class="nav-btn"
-                                @click="goFindAccountPage()"
                             >
-                                아이디 | 비밀번호 찾기
+                                계정 찾기
                             </button>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -340,11 +339,9 @@ export default {
             this.removeUserId();
             this.$router.push({ name: "MainPage" });
         },
+
         goSignPage() {
             this.$router.push({ name: "SignPage" });
-        },
-        goFindAccountPage() {
-            // 아이디/비밀번호 찾기 페이지로 이동하는 코드
         },
         async searchList() {
             try {

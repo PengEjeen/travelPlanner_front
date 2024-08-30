@@ -6,6 +6,7 @@ import SignPage from "@/components/SignPage.vue";
 import FestivalPage from "@/components/FestivalPage.vue";
 import PlannerPage from "@/components/PlannerPage.vue";
 import SelectDetailPage from "@/components/SelectDetailPage.vue";
+import ManualPage from "@/components/ManualPage.vue";
 
 const routes = [
     {
@@ -42,6 +43,11 @@ const routes = [
         path: "/SelectDetailPage",
         name: "SelectDetailPage",
         component: SelectDetailPage,
+    },
+    {
+        path: "/ManualPage",
+        name: "ManualPage",
+        component: ManualPage,
     },
 ];
 
