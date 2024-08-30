@@ -183,6 +183,7 @@
                                                     alt="세부사항 자세히 보기 이미지"
                                                 />
                                             </button>
+
                                             <button
                                                 class="plannerdetailMemoBtn"
                                                 type="button"
@@ -214,21 +215,43 @@
                                                 />
                                             </button>
                                         </div>
-                                        <div class="plannerDetailMenuBtn">
+                                        <div class="detailToggleBtnBox">
                                             <button
+                                                v-if="
+                                                    detailIndex !==
+                                                    dayGroup.day.length - 1
+                                                "
+                                                class="plannerdetailRouteBtn"
                                                 type="button"
                                                 @click="
-                                                    toggleDetailMenu(
+                                                    toggleDetailRoute(
                                                         index,
                                                         detailIndex
                                                     )
                                                 "
                                             >
                                                 <img
-                                                    src="@/assets/icons/planMenu.png"
-                                                    alt="데이 메뉴버튼 이미지"
+                                                    src="@/assets/icons/findRoute.png"
+                                                    alt="세부사항 경로 찾기 이미지"
                                                 />
                                             </button>
+
+                                            <div class="plannerDetailMenuBtn">
+                                                <button
+                                                    type="button"
+                                                    @click="
+                                                        toggleDetailMenu(
+                                                            index,
+                                                            detailIndex
+                                                        )
+                                                    "
+                                                >
+                                                    <img
+                                                        src="@/assets/icons/planMenu.png"
+                                                        alt="데이 메뉴버튼 이미지"
+                                                    />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div
@@ -246,6 +269,12 @@
                                         />
                                     </div>
                                     <div
+                                        v-show="
+                                            activeDetailRoute.dayGroup ===
+                                                index &&
+                                            activeDetailRoute.detailIndex ===
+                                                detailIndex
+                                        "
                                         class="placeRouteBox"
                                         v-if="
                                             detailIndex !==
@@ -262,7 +291,19 @@
                                                 :key="routeIndex"
                                             >
                                                 <div
+                                                    v-if="!routeArray"
+                                                    class="route_item"
+                                                >
+                                                    <img
+                                                        src="@/assets/icons/connectRouteLine.png"
+                                                        alt="경로 수직선 이미지"
+                                                        id="connectRouteLineImg"
+                                                    />
+                                                    거리가 너무 멉니다.
+                                                </div>
+                                                <div
                                                     v-if="
+                                                        routeArray &&
                                                         !routeArray.transitDetails
                                                     "
                                                     class="route_item"
@@ -312,6 +353,13 @@
                                                                     ?.departureStop
                                                                     ?.name
                                                             }}
+                                                            {{
+                                                                routeArray
+                                                                    .transitDetails
+                                                                    ?.localizedValues
+                                                                    ?.departureTime
+                                                                    ?.time?.text
+                                                            }}
                                                         </span>
                                                         <div
                                                             :style="{
@@ -354,6 +402,13 @@
                                                                     ?.stopDetails
                                                                     ?.arrivalStop
                                                                     ?.name
+                                                            }}
+                                                            {{
+                                                                routeArray
+                                                                    .transitDetails
+                                                                    ?.localizedValues
+                                                                    ?.arrivalTime
+                                                                    ?.time?.text
                                                             }}
                                                         </span>
                                                     </div>
@@ -428,7 +483,7 @@
                         aria-label="Close"
                     ></button>
                 </div>
-                <hr />
+                <hr class="offcanvasHeaderHr" />
                 <div class="offcanvas-body">
                     <!-- 리뷰가 있을 경우 -->
                     <div v-if="selectedDetailPlace.reviews != ''">
@@ -440,8 +495,11 @@
                                 :key="index"
                             >
                                 <p>
-                                    저자: <strong> {{ reviews.author }}</strong>
-                                    <span> 별점: {{ reviews.rating }} </span>
+                                    <strong>
+                                        작성인:
+                                        {{ reviews.author }}
+                                        (별점: {{ reviews.rating }})
+                                    </strong>
                                     <span>
                                         {{ reviews.text }}
                                     </span>
@@ -466,10 +524,6 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
     computed: {
-        ...mapGetters(["userId"]),
-        user_id() {
-            return this.userId;
-        },
         ...mapGetters({
             user_id: "userId",
             revisePlaceId: "placeId",
@@ -483,6 +537,7 @@ export default {
             activeMenu: null,
             activeDetailMenu: { dayGroup: null, detailIndex: null },
             activeDetailMemo: { dayGroup: null, detailIndex: null },
+            activeDetailRoute: { dayGroup: null, detailIndex: null },
             cells: [],
             place_names: [],
             place_photos: [],
@@ -495,6 +550,7 @@ export default {
                 websiteUri: "",
                 reviews: [],
             },
+            isFormDirty: true,
         };
     },
     methods: {
@@ -789,9 +845,30 @@ export default {
                     const primaryRoute =
                         placeRouteData[0]?.legs[0]?.steps || [];
 
+                    const filteredPrimaryRoute = primaryRoute.reduce(
+                        (acc, current) => {
+                            const isEmptyObject =
+                                Object.keys(current).length === 0;
+
+                            if (isEmptyObject) {
+                                if (
+                                    acc.length > 0 &&
+                                    Object.keys(acc[acc.length - 1]).length ===
+                                        0
+                                ) {
+                                    return acc;
+                                }
+                            }
+
+                            acc.push(current);
+                            return acc;
+                        },
+                        []
+                    );
+
                     placeRoutes.push({
                         place_id: place_id,
-                        route: primaryRoute,
+                        route: filteredPrimaryRoute,
                     });
                 } catch (error) {
                     console.error(
@@ -801,7 +878,7 @@ export default {
 
                     placeRoutes.push({
                         place_id: place_id,
-                        route: "경로 오류",
+                        route: [""],
                     });
                 }
             }
@@ -853,6 +930,7 @@ export default {
 
                                 localStorage.removeItem("revisePlaceIdInfo");
                                 console.log("Updated cells:", this.cells);
+                                this.savePlannerPage();
                             } else {
                                 console.log(
                                     `No detail found at index ${index}-${detailIndex}`
@@ -946,6 +1024,18 @@ export default {
             dayGroup.day.splice(detailIndex, 1);
         },
 
+        toggleDetailRoute(index, detailIndex) {
+            if (
+                this.activeDetailRoute.dayGroup === index &&
+                this.activeDetailRoute.detailIndex === detailIndex
+            ) {
+                this.activeDetailRoute = { dayGroup: null, detailIndex: null };
+            } else {
+                this.activeDetailRoute = { dayGroup: index, detailIndex };
+            }
+            console.log("Updated Active Detail Route:", this.activeDetailRoute);
+        },
+
         async fetchPlannerDetailInfoData(place_id) {
             console.log(`Fetching details for information: ${place_id}`);
 
@@ -981,7 +1071,8 @@ export default {
                         return {
                             author: review.authorAttribution.displayName,
                             rating: review.rating,
-                            text: review.originalText?.text || review.text.text,
+                            text:
+                                review.originalText?.text || review.text?.text,
                         };
                     }
                 );
@@ -1073,6 +1164,17 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener("beforeunload", this.handleBeforeUnload);
+    },
+    beforeRouteLeave(to, from, next) {
+        const message =
+            "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+
+        const answer = window.confirm(message);
+        if (answer) {
+            next();
+        } else {
+            next(false);
+        }
     },
 };
 </script>
@@ -1235,6 +1337,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 50px;
 }
 
 .plannerDetailBox .placeBox {
@@ -1252,6 +1355,16 @@ export default {
 
 .plannerDetailMenuBtn button img {
     width: 35px;
+}
+
+.detailToggleBtnBox {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.plannerdetailRouteBtn img {
+    height: 26px;
 }
 
 /* 플래너 세부사항 메뉴바 css */
@@ -1331,17 +1444,17 @@ export default {
 .route_item {
     display: flex;
     align-items: center;
-    font-size: 18px;
+    font-size: 15px;
 }
 
 #connectRouteLineImg {
     width: 100px;
-    height: 70px;
+    height: 30px;
 }
 
 #connectRouteTransferImg {
     width: 100px;
-    height: 85px;
+    height: 50px;
 }
 
 .route_details {
@@ -1364,21 +1477,39 @@ export default {
 }
 
 .detailInfoOffcanvas .offcanvas-header .btn-close {
-    margin-top: -260px;
+    position: absolute;
+    top: 10px;
+    right: 375px;
+}
+
+.detailInfoOffcanvas .offcanvas-header {
+    background-color: lightblue;
+    border: 3px solid;
+    border-bottom: none;
 }
 
 .detailInfoOffcanvas .offcanvas-header div p {
     float: left;
-    margin-left: 50px;
+    margin-left: 20px;
+}
+
+.detailInfoOffcanvas .offcanvasHeaderHr {
+    height: 20px;
+    margin: 0px;
+    background-color: black;
 }
 
 .detailInfoOffcanvas .offcanvas-body {
     float: left;
-    margin-left: 10px;
+    padding-left: 10px;
+    font-size: 20px;
+    border: 3px solid;
+    border-top: none;
 }
 
 .detailInfoOffcanvas .offcanvas-body p span {
     display: block;
+    font-size: 17px;
 }
 
 /* 플래너 저장 Btn css */
