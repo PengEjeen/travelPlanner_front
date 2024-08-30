@@ -159,29 +159,86 @@ export default {
             }
         },
 
-        reviseMyInfo() {
-            if (this.myInfo.revisePassword == "") {
-                alert("변경하실 비밀번호를 입력하십시오.");
+        isValidPassword(password) {
+            if (password.length < 8) {
+                return false;
+            }
+
+            const commonPasswords = [
+                "12345678",
+                "password",
+                "qwerty",
+                "11111111",
+                "123456789",
+                "1234567890",
+            ];
+
+            if (commonPasswords.includes(password)) {
+                return false;
+            }
+
+            return true;
+        },
+
+        isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        },
+
+        async reviseMyInfo() {
+            if (
+                this.myInfo.reviseUserId === "" ||
+                !this.isValidPassword(this.myInfo.revisePassword) ||
+                this.myInfo.reviseEmail === ""
+            ) {
+                alert("아이디, 비밀번호, 이메일을 모두 입력하십시오.");
                 return;
-            } else {
+            }
+
+            if (!this.isValidEmail(this.myInfo.reviseEmail)) {
+                alert("올바른 이메일 형식을 입력하십시오.");
+                return;
+            }
+            try {
+                console.log("readying data:", this.myInfo);
+
+                const shipMyInfo = {
+                    myInfo: {
+                        reviseUserId: this.myInfo.reviseUserId,
+                        revisePassword: this.myInfo.revisePassword,
+                        reviseEmail: this.myInfo.reviseEmail,
+                    },
+                };
+
+                const reviseInfoResponse = await this.$axios.put(
+                    `http://34.64.132.0/api/common/userinfo/update/${this.user_id}/`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json; charset=utf-8",
+                        },
+                        body: shipMyInfo,
+                    }
+                );
+
+                console.log("Sending JSONdata:", JSON.stringify(shipMyInfo));
+                console.log("받은 JSONdata:", reviseInfoResponse);
+
                 alert("회원님의 정보가 수정되었습니다.");
+
                 this.updateUserId(this.myInfo.reviseUserId);
-                window.location.reload();
+                this.fetchMyPageData();
+            } catch (error) {
+                console.error(
+                    "Error saving planner data:",
+                    error.response?.data || error.message
+                );
             }
         },
 
         async withdrawAccount() {
             try {
                 const deleteResponse = await this.$axios.delete(
-                    `http://34.64.132.0/api/common/delete/`,
-                    {
-                        data: {
-                            username: this.user_id,
-                        },
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
+                    `http://34.64.132.0/api/common/delete/${this.user_id}/`
                 );
                 console.log("Delete response:", deleteResponse.data);
                 alert("귀하의 계정 삭제가 완료되었습니다.");
