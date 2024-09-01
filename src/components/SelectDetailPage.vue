@@ -357,7 +357,7 @@ export default {
                 JSON.stringify(revisePlaceIdInfo)
             );
 
-            //window.close();
+            window.close();
         },
 
         updateMap(googleMapsUri) {
