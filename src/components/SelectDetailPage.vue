@@ -7,7 +7,7 @@
                     placeholder="원하는 장소를 입력하세요"
                     v-model="textSearch"
                 />
-                <button class="search-button" @click="fetchTravelData">
+                <button class="search-button" @click="fetchTravelData2">
                     <img src="@/assets/icons/search_btn.png" alt="검색 버튼" />
                 </button>
             </div>
@@ -19,9 +19,9 @@
                         class="travel-item"
                         @click="updateMap(item.googleMapsUri)"
                     >
-                        <img :src="item.imgSrc" alt="Travel Image" />
+                        <img :src="item.imgSrc || '@/assets/icons/logo.png'" alt="Travel Image" />
                         <div class="info">
-                            <div class="title">{{ item.title }}</div>
+                            <div class="title">{{ item.title || '제목 없음' }}</div>
                             <button
                                 class="more-button"
                                 @click.stop="openModal(item)"
@@ -52,9 +52,9 @@
         <div v-if="isDrawerOpen" class="drawer">
             <div class="drawer-content">
                 <div class="drawer-search-boxes">
-                    <label for="city-input" class="drawer-label"
-                        >도시 검색</label
-                    >
+                    <label for="city-input" class="drawer-label">
+                        도시 검색
+                    </label>
                     <input
                         id="city-input"
                         type="text"
@@ -62,9 +62,9 @@
                         v-model="address"
                     />
 
-                    <label for="category-input" class="drawer-label"
-                        >키워드 검색</label
-                    >
+                    <label for="category-input" class="drawer-label">
+                        키워드 검색
+                    </label>
                     <input
                         id="category-input"
                         type="text"
@@ -102,19 +102,19 @@
                 <span class="close" @click="closeModal">&times;</span>
                 <div class="modal-body">
                     <div class="modal-image">
-                        <img :src="item.imgSrc" alt="Travel Image" />
+                        <img :src="item.imgSrc || '@/assets/icons/logo.png'" alt="Travel Image" />
                     </div>
                     <div class="modal-details">
-                        <h2>{{ item.title }}</h2>
-                        <p>별점: {{ item.rating }}</p>
-                        <p>상세 위치: {{ item.formattedAddress }}</p>
-                        <p>전화번호: {{ item.nationalPhoneNumber }}</p>
+                        <h2>{{ item.title || '정보 없음' }}</h2>
+                        <p>별점: {{ item.rating || '정보 없음' }}</p>
+                        <p>상세 위치: {{ item.formattedAddress || '정보 없음' }}</p>
+                        <p>전화번호: {{ item.nationalPhoneNumber || '정보 없음' }}</p>
                         <p>
                             홈페이지:
                             <a
+                                v-if="item.websiteUri && item.websiteUri !== '정보 없음'"
                                 :href="item.websiteUri"
                                 target="_blank"
-                                v-if="item.websiteUri !== '정보 없음'"
                             >
                                 {{ item.websiteUri }}
                             </a>
@@ -126,17 +126,15 @@
                 <div class="modal-review">
                     <div
                         v-for="review in item.reviews"
-                        :key="review.author"
+                        :key="review.author || Math.random()"
                         class="review-item"
                     >
                         <div class="review-content">
                             <p>
-                                <strong>{{
-                                    review.authorAttribution.displayName
-                                }}</strong>
-                                (별점: {{ review.rating }})
+                                <strong>{{ review.authorAttribution?.displayName || '익명' }}</strong>
+                                (별점: {{ review.rating || '정보 없음' }})
                             </p>
-                            <p v-html="review.originalText.text"></p>
+                            <p v-html="review.originalText?.text || '댓글 없음'"></p>
                             <hr />
                         </div>
                     </div>
@@ -221,13 +219,13 @@ export default {
 
                 this.travelItems = await Promise.all(
                     placeData.map(async (item) => {
-                        const photoName = item.photos[0]?.name;
                         let imgSrc = "";
+                        const photoName = item.photos?.[0]?.name; 
 
                         if (photoName) {
                             try {
                                 const photoResponse = await this.$axios.get(
-                                    "http://34.64.132.0/api/googlemaps/placePhotos/",
+                                    //"http://34.64.132.0/api/googlemaps/placePhotos/",
                                     {
                                         params: { place_url: photoName },
                                     }
@@ -244,17 +242,78 @@ export default {
                         }
 
                         return {
-                            title: item.displayName.text,
-                            imgSrc: imgSrc,
-                            rating: item.rating || "정보 없음",
-                            formattedAddress:
-                                item.formattedAddress || "정보 없음",
-                            nationalPhoneNumber:
-                                item.nationalPhoneNumber || "정보 없음",
-                            websiteUri: item.websiteUri || "정보 없음",
-                            reviews: item.reviews || [],
-                            placeId: item.id,
-                            photo_name: photoName,
+                            title: item.displayName.text || "제목 없음",
+                            imgSrc: imgSrc || "",
+                            rating: item.rating || "평점 정보 없음",
+                            formattedAddress: item.formattedAddress || "주소 정보 없음",
+                            nationalPhoneNumber: item.nationalPhoneNumber || "전화번호 정보 없음",
+                            websiteUri: item.websiteUri || "웹사이트 정보 없음",
+                            reviews: item.reviews || [], 
+                            placeId: item.id || "",
+                            photo_name: photoName || "",
+                            googleMapsUri: item.googleMapsUri || "",
+                        };
+                    })
+                );
+            } catch (err) {
+                this.error = "데이터를 가져오는 데 실패했습니다.";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchTravelData2() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const searchText = this.textSearch.trim();
+                const response = await this.$axios.get(
+                    "http://34.64.132.0/api/googlemaps/searchNearPlace/",
+                    {
+                        params: {
+                            address: searchText,
+                            keyword: searchText,
+                        },
+                    }
+                );
+
+                const placeData = response.data.places;
+
+                this.travelItems = await Promise.all(
+                    placeData.map(async (item) => {
+                        let imgSrc = "";
+                        const photoName = item.photos?.[0]?.name; 
+
+                        if (photoName) {
+                            try {
+                                const photoResponse = await this.$axios.get(
+                                    //"http://34.64.132.0/api/googlemaps/placePhotos/",
+                                    {
+                                        params: { place_url: photoName },
+                                    }
+                                );
+
+                                imgSrc = `data:image/jpeg;base64,${photoResponse.data}`;
+                            } catch (err) {
+                                console.error("이미지 로드 실패:", err);
+                            }
+                        }
+
+                        if (!imgSrc) {
+                            imgSrc = require("@/assets/icons/logo.png");
+                        }
+
+                        return {
+                            title: item.displayName.text || "제목 없음",
+                            imgSrc: imgSrc || "",
+                            rating: item.rating || "평점 정보 없음",
+                            formattedAddress: item.formattedAddress || "주소 정보 없음",
+                            nationalPhoneNumber: item.nationalPhoneNumber || "전화번호 정보 없음",
+                            websiteUri: item.websiteUri || "웹사이트 정보 없음",
+                            reviews: item.reviews || [], 
+                            placeId: item.id || "",
+                            photo_name: photoName || "",
                             googleMapsUri: item.googleMapsUri || "",
                         };
                     })
@@ -298,7 +357,7 @@ export default {
                 JSON.stringify(revisePlaceIdInfo)
             );
 
-            window.close();
+            //window.close();
         },
 
         updateMap(googleMapsUri) {
