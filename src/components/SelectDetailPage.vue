@@ -225,7 +225,7 @@ export default {
                         if (photoName) {
                             try {
                                 const photoResponse = await this.$axios.get(
-                                    //"http://34.64.132.0/api/googlemaps/placePhotos/",
+                                    "http://34.64.132.0/api/googlemaps/placePhotos/",
                                     {
                                         params: { place_url: photoName },
                                     }
@@ -288,7 +288,7 @@ export default {
                         if (photoName) {
                             try {
                                 const photoResponse = await this.$axios.get(
-                                    //"http://34.64.132.0/api/googlemaps/placePhotos/",
+                                    "http://34.64.132.0/api/googlemaps/placePhotos/",
                                     {
                                         params: { place_url: photoName },
                                     }
