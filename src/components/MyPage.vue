@@ -39,6 +39,7 @@
                             required
                         />
                     </div>
+                    <!--수정 버튼 -->
                     <div class="form-group button-group">
                         <button
                             type="button"
@@ -131,14 +132,11 @@ export default {
     methods: {
         ...mapActions(["updateUserId", "removeUserId"]),
 
+        /* 내정보 아이디,비밀번호,이메일 설정 */
         async fetchMyPageData() {
             this.myInfo = {};
 
             try {
-                console.log(
-                    `Fetching myPage for information user_id: ${this.user_id}`
-                );
-
                 const myInfoResponse = await this.$axios.get(
                     `http://34.64.132.0/api/common/userinfo/${this.user_id}/`
                 );
@@ -159,6 +157,7 @@ export default {
             }
         },
 
+        /* 내정보 비밀번호 제한규정 */
         isValidPassword(password) {
             if (password.length < 8) {
                 return false;
@@ -180,11 +179,13 @@ export default {
             return true;
         },
 
+        /* 내정보 이메일 제한규정 */
         isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
         },
 
+        /* 내정보 수정 */
         async reviseMyInfo() {
             if (
                 this.myInfo.reviseUserId === "" ||
@@ -200,8 +201,6 @@ export default {
                 return;
             }
             try {
-                console.log("readying data:", this.myInfo);
-
                 const shipMyInfo = {
                     myInfo: {
                         reviseUserId: this.myInfo.reviseUserId,
@@ -210,7 +209,7 @@ export default {
                     },
                 };
 
-                const reviseInfoResponse = await this.$axios.put(
+                await this.$axios.put(
                     `http://34.64.132.0/api/common/userinfo/update/${this.user_id}/`,
                     {
                         headers: {
@@ -219,9 +218,6 @@ export default {
                         body: shipMyInfo,
                     }
                 );
-
-                console.log("Sending JSONdata:", JSON.stringify(shipMyInfo));
-                console.log("받은 JSONdata:", reviseInfoResponse);
 
                 alert("회원님의 정보가 수정되었습니다.");
 
@@ -235,6 +231,7 @@ export default {
             }
         },
 
+        /* 내정보 계정 삭제 */
         async withdrawAccount() {
             try {
                 const deleteResponse = await this.$axios.delete(
@@ -252,6 +249,7 @@ export default {
             }
         },
 
+        /* 내정보 닫기&새로고침 할 경우 경고창 띄우기 */
         handleBeforeUnload(event) {
             if (this.isFormDirty) {
                 const message =
@@ -265,9 +263,11 @@ export default {
         window.addEventListener("beforeunload", this.handleBeforeUnload);
         this.fetchMyPageData();
     },
+    /* 내정보 닫기&새로고침 감지 설정 */
     beforeUnmount() {
         window.removeEventListener("beforeunload", this.handleBeforeUnload);
     },
+    /* 내정보 다른 페이지로 이동할 경우 경고창 띄우기 */
     beforeRouteLeave(to, from, next) {
         if (!this.isFormDirty) {
             next();

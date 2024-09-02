@@ -1,5 +1,6 @@
 <template>
     <section>
+        <!-- 슬라이드 -->
         <div
             id="carouselExampleDark"
             class="carousel carousel-dark slide"

@@ -1,4 +1,14 @@
 <template>
+    <!-- 로딩 스피너 -->
+    <div id="loading">
+        <div
+            class="spinner-border m-5 text-info"
+            style="width: 5rem; height: 5rem; border-width: 0.6rem"
+            role="status"
+        >
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
     <div class="plannerPlanBox">
         <!-- 사이드 스크롤스파이 -->
         <div class="plannerPlanScrollspyBox">
@@ -34,7 +44,6 @@
                     :style="{ width: inputTitleWidth }"
                     class="plannerPlanInputTitle"
                 />
-                <!-- 프린트 버튼 -->
                 <button class="printImgBtn">
                     <img src="@/assets/icons/print.png" alt="프린트 이미지" />
                 </button>
@@ -48,7 +57,7 @@
                     tabindex="0"
                 >
                     <div class="PlannerPlanInformationBox">
-                        <!-- 데이 정보 칸 -->
+                        <!-- Day 정보 칸 -->
                         <!-- 일정이 없을 경우 -->
                         <div v-if="!cells.length">
                             <div
@@ -109,7 +118,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <!-- 데이의 세부정보 칸 -->
+                                <!-- 세부정보 칸 -->
                                 <div
                                     v-for="(
                                         detail, detailIndex
@@ -157,6 +166,7 @@
                                                 세부일정 추가하기
                                             </button>
                                         </div>
+                                        <!-- 세부정보 메뉴바 -->
                                         <div
                                             v-show="
                                                 activeDetailMenu.dayGroup ===
@@ -215,6 +225,7 @@
                                                 />
                                             </button>
                                         </div>
+                                        <!-- 세부사항 오른쪽의 메뉴, 지도 버튼 -->
                                         <div class="detailToggleBtnBox">
                                             <button
                                                 v-if="
@@ -235,7 +246,7 @@
                                                     alt="세부사항 경로 찾기 이미지"
                                                 />
                                             </button>
-
+                                            <!-- 세부사항 메뉴 버튼 -->
                                             <div class="plannerDetailMenuBtn">
                                                 <button
                                                     type="button"
@@ -254,6 +265,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- 세부사항 메모바 -->
                                     <div
                                         v-show="
                                             activeDetailMemo.dayGroup ===
@@ -268,6 +280,7 @@
                                             v-model="detail.memo"
                                         />
                                     </div>
+                                    <!-- 길 안내 -->
                                     <div
                                         v-show="
                                             activeDetailRoute.dayGroup ===
@@ -422,10 +435,12 @@
                     </div>
                 </div>
             </div>
+            <!-- 저장 버튼 -->
             <div class="plannerSaveBtnBox">
                 <button @click="savePlannerPage()">저장</button>
             </div>
         </div>
+        <!-- 장소 상세정보(오프 캔버스) -->
         <div class="detailInfoOffcanvas">
             <div
                 class="offcanvas offcanvas-end"
@@ -508,7 +523,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- 리뷰가 없을 경우 -->
                     <div v-else>
                         <p>리뷰가 없습니다.</p>
@@ -561,6 +575,7 @@ export default {
             "removePlaceId",
         ]),
 
+        /* 플래너 아이디의 정보 불러와서 설정 */
         async fetchPlannerData(planner_id) {
             try {
                 const response = await this.$axios.get(
@@ -571,10 +586,6 @@ export default {
                         },
                     }
                 );
-
-                console.log("Fetched Data:", response.data);
-                console.log("Planner ID:", this.planner_id);
-                console.log("Planner ID:", planner_id);
 
                 this.cells = response.data.cells;
                 this.title = response.data.title;
@@ -596,30 +607,25 @@ export default {
                     await this.fetchPhotoData(placeIds);
                     await this.fetchRouteData(placeIds);
                 }
+
+                document.getElementById("loading").style.display = "none";
             } catch (error) {
                 console.error("Error fetching data:", error);
+                document.getElementById("loading").style.display = "none";
             }
         },
 
+        /* 플래너 장소 이름 설정 */
         async fetchPlaceData(placeIds) {
-            console.log("Name placeIds:", placeIds);
-
             const placeNames = [];
 
             for (const { place_id } of placeIds) {
                 try {
-                    console.log(`Fetching details for place_id: ${place_id}`);
-
                     const placeResponse = await this.$axios.get(
                         `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const placeData = placeResponse.data;
-
-                    console.log(
-                        `Response for place_id ${place_id}:`,
-                        placeData
-                    );
 
                     const primaryName =
                         placeData.displayName?.text || "Name not available";
@@ -640,41 +646,29 @@ export default {
                     });
                 }
             }
-
-            console.log("placeNames:", placeNames);
-
             this.place_names = placeNames.map(({ place_id, name }) => ({
                 id: place_id,
                 name: name,
             }));
         },
 
+        /* 플래너 장소 이름 표시 */
         getPlaceName(placeId) {
             const place = this.place_names.find((p) => p.id === placeId);
             return place ? place.name : "장소 없음";
         },
 
+        /* 플래너 장소 첫번째 사진배열 설정 */
         async fetchPhotoData(placeIds) {
-            console.log("Photo placeIds:", placeIds);
-
             const placePhotos = [];
 
             for (const { place_id } of placeIds) {
                 try {
-                    console.log(
-                        `Fetching details for photoPlaceId: ${place_id}`
-                    );
-
                     const photoResponse = await this.$axios.get(
                         `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const photoData = photoResponse.data;
-
-                    console.log(
-                        `Response for Photo place_id ${place_id}:`,
-                        photoData
-                    );
 
                     const photoName =
                         photoData.photos?.length > 0
@@ -698,15 +692,13 @@ export default {
                 }
             }
 
-            console.log("placePhotos:", placePhotos);
-
             if (placePhotos.length > 0) {
                 await this.savePhotos(placePhotos);
             }
         },
-        async savePhotos(placePhotos) {
-            console.log(`Fetching details for placePhotos: ${placePhotos}`);
 
+        /* 플래너 장소 이미지 데이터 설정 */
+        async savePhotos(placePhotos) {
             const placePhotoUrl = [];
 
             for (const { place_id, type } of placePhotos) {
@@ -721,8 +713,6 @@ export default {
                         });
                         continue;
                     }
-
-                    console.log(`Fetching details for type: ${type}`);
 
                     const photoResponse = await this.$axios.get(
                         `http://34.64.132.0/api/googlemaps/placePhotos/?place_url=${type}`
@@ -748,40 +738,29 @@ export default {
                 }
             }
 
-            console.log("placePhotoUrl:", placePhotoUrl);
-
             this.place_photos = placePhotoUrl.map(({ place_id, url }) => ({
                 id: place_id,
                 url: url,
             }));
         },
 
+        /* 플래너 장소 이미지 표시 */
         getPlacePhoto(placeId) {
             const photo = this.place_photos.find((p) => p.id === placeId);
             return photo ? photo.url : require("@/assets/icons/logo.png");
         },
 
+        /* 플래너 장소 주소 설정 */
         async fetchRouteData(placeIds) {
-            console.log("Address placeIds:", placeIds);
-
             const placeAddress = [];
 
             for (const { place_id } of placeIds) {
                 try {
-                    console.log(
-                        `Fetching details for addressPlaceId: ${place_id}`
-                    );
-
                     const addressResponse = await this.$axios.get(
                         `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const addressData = addressResponse.data;
-
-                    console.log(
-                        `Response for address place_id: ${place_id}:`,
-                        addressResponse
-                    );
 
                     const placeFormattedAddress =
                         addressData.formattedAddress || "Address not available";
@@ -802,31 +781,22 @@ export default {
                     });
                 }
             }
-            console.log("placeAddress:", placeAddress);
 
             if (placeAddress.length > 0) {
                 await this.saveRoutes(placeAddress);
             }
         },
 
+        /* 플래너 장소 길안내 설정 */
         async saveRoutes(placeAddress) {
-            console.log("Route placeIds:", placeAddress);
-
             const placeRoutes = [];
 
             for (let i = 0; i < placeAddress.length; i++) {
                 const { place_id, address } = placeAddress[i];
                 try {
-                    console.log(
-                        `Fetching details for routePlaceId: ${address}`
-                    );
-
                     let destination = "";
                     if (i < placeAddress.length - 1) {
                         destination = placeAddress[i + 1].address;
-                        console.log(
-                            `Fetching details for routeDestination: ${destination}`
-                        );
                     } else {
                         continue;
                     }
@@ -836,11 +806,6 @@ export default {
                     );
 
                     const placeRouteData = routeResponse.data;
-
-                    console.log(
-                        `Response for route place_id ${address}:`,
-                        placeRouteData
-                    );
 
                     const primaryRoute =
                         placeRouteData[0]?.legs[0]?.steps || [];
@@ -883,19 +848,19 @@ export default {
                 }
             }
 
-            console.log("placeRoutes:", placeRoutes);
-
             this.place_routes = placeRoutes.map(({ place_id, route }) => ({
                 id: place_id,
                 route: route,
             }));
         },
 
+        /* 플래너 장소 주소 설정 */
         getPlaceRoute(placeId) {
             const route = this.place_routes.find((p) => p.id === placeId);
             return route ? route.route : "";
         },
 
+        /* 플래너 장소 변경 */
         revisePlace_id(place_id, index, detailIndex) {
             this.updatePlaceId(place_id);
 
@@ -908,12 +873,10 @@ export default {
 
                     const revisePlaceIdInfo =
                         localStorage.getItem("revisePlaceIdInfo");
-                    console.log("Revise PlaceId Info:", revisePlaceIdInfo);
 
                     if (revisePlaceIdInfo) {
                         try {
                             const placeInfo = JSON.parse(revisePlaceIdInfo);
-                            console.log("Parsed Place Info:", placeInfo);
 
                             const after = placeInfo.after || "";
 
@@ -923,13 +886,11 @@ export default {
                             ) {
                                 const detail =
                                     this.cells[index].day[detailIndex];
-                                console.log(
-                                    `Updating place_id at index ${index}-${detailIndex} from '${detail.place_id}' to '${after}'`
-                                );
+
                                 detail.place_id = after;
 
                                 localStorage.removeItem("revisePlaceIdInfo");
-                                console.log("Updated cells:", this.cells);
+
                                 this.savePlannerPage();
                             } else {
                                 console.log(
@@ -951,12 +912,14 @@ export default {
             }, 100);
         },
 
+        /* 플래너 Day 추가 */
         plusDay() {
             this.cells.push({
                 day: [],
             });
         },
 
+        /* 플래너 제목에 길이에 맞는 칸 너비 설정 */
         adjustTitleWidth() {
             const inputElement = this.$refs.title;
             const span = document.createElement("span");
@@ -978,10 +941,12 @@ export default {
             document.body.removeChild(span);
         },
 
+        /* 플래너 Day 메뉴바 On/Off */
         toggleDayMenu(index) {
             this.activeMenu = this.activeMenu === index ? null : index;
         },
 
+        /* 플래너 세부정보 추가 */
         plannerDay_plusDetail(dayGroup) {
             dayGroup.day.push({
                 status: 0,
@@ -990,10 +955,12 @@ export default {
             });
         },
 
+        /* 플래너 Day 삭제 */
         plannerDay_delete(index) {
             this.cells.splice(index, 1);
         },
 
+        /* 플래너 세부정보 메뉴바 On/Off */
         toggleDetailMenu(index, detailIndex) {
             if (
                 this.activeDetailMenu.dayGroup === index &&
@@ -1005,9 +972,9 @@ export default {
                 this.activeDetailMenu = { dayGroup: index, detailIndex };
                 this.activeDetailMemo = { dayGroup: null, detailIndex: null };
             }
-            console.log("Updated Active Detail Menu:", this.activeDetailMenu);
         },
 
+        /* 플래너 세부정보 메모 On/Off */
         plannerdetailMemo(index, detailIndex) {
             if (
                 this.activeDetailMemo.dayGroup === index &&
@@ -1017,13 +984,14 @@ export default {
             } else {
                 this.activeDetailMemo = { dayGroup: index, detailIndex };
             }
-            console.log("Updated Active Detail Memo:", this.activeDetailMemo);
         },
 
+        /* 플래너 세부정보 삭제 */
         plannerdetailDelete(dayGroup, detailIndex) {
             dayGroup.day.splice(detailIndex, 1);
         },
 
+        /* 플래너 세부정보 길안내 On/Off */
         toggleDetailRoute(index, detailIndex) {
             if (
                 this.activeDetailRoute.dayGroup === index &&
@@ -1033,19 +1001,13 @@ export default {
             } else {
                 this.activeDetailRoute = { dayGroup: index, detailIndex };
             }
-            console.log("Updated Active Detail Route:", this.activeDetailRoute);
         },
 
+        /* 플래너 장소의 상세정보 설정 */
         async fetchPlannerDetailInfoData(place_id) {
-            console.log(`Fetching details for information: ${place_id}`);
-
             this.selectedDetailPlace = {};
 
             try {
-                console.log(
-                    `Fetching details for information place_id: ${place_id}`
-                );
-
                 const infoResponse = await this.$axios.get(
                     `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                 );
@@ -1076,12 +1038,6 @@ export default {
                         };
                     }
                 );
-
-                console.log(
-                    `SelectedDetailPlace set: ${JSON.stringify(
-                        this.selectedDetailPlace
-                    )}`
-                );
             } catch (error) {
                 console.error(
                     `Error fetching place details for ${place_id}:`,
@@ -1100,6 +1056,7 @@ export default {
             }
         },
 
+        /* 플래너 모든 정보 저장 */
         async savePlannerPage() {
             try {
                 this.cells.forEach((day) => {
@@ -1116,9 +1073,7 @@ export default {
                     cells: this.cells,
                 };
 
-                console.log("readying data:", plannerData);
-
-                const response = await fetch(
+                await fetch(
                     `http://34.64.132.0/api/planners/${this.planner_id}/update/`,
                     {
                         method: "PUT",
@@ -1129,15 +1084,8 @@ export default {
                     }
                 );
 
-                console.log(
-                    "Sending JSONdata:",
-                    JSON.stringify(plannerData, null, 2)
-                );
-
-                const responseData = await response.json();
-                console.log("Response Data:", responseData);
-
                 alert("저장이 완료되었습니다.");
+                document.getElementById("loading").style.display = "block";
                 this.fetchPlannerData(this.planner_id);
             } catch (error) {
                 console.error(
@@ -1147,6 +1095,7 @@ export default {
             }
         },
 
+        /* 플래너 닫기&새로고침 할 경우 경고창 띄우기 */
         handleBeforeUnload(event) {
             const message =
                 "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
@@ -1162,9 +1111,11 @@ export default {
         this.planner_id = queryParams.get("planner_id");
         this.fetchPlannerData(this.planner_id);
     },
+    /* 플래너 닫기&새로고침 감지 설정 */
     beforeUnmount() {
         window.removeEventListener("beforeunload", this.handleBeforeUnload);
     },
+    /* 플래너 다른 페이지로 이동할 경우 경고창 띄우기 */
     beforeRouteLeave(to, from, next) {
         const message =
             "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
@@ -1180,6 +1131,20 @@ export default {
 </script>
 
 <style>
+/* 로딩중 화면 */
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
 /* 플래너 구성요소 박스 css */
 .plannerPlanBox {
     display: flex;
@@ -1433,7 +1398,7 @@ export default {
     transform: translateX(-50%);
 }
 
-/* 세부사항 사이 루트 css */
+/* 세부사항 길 안내 css */
 .placeRouteBox {
     display: flex;
     align-items: flex-start;
@@ -1471,7 +1436,7 @@ export default {
     padding: 5px 10px;
 }
 
-/* 오프 캔버스 css */
+/* 장소의 세부정보창(오프 캔버스) css */
 .detailInfoOffcanvas {
     border-radius: 5px solid !important;
 }
@@ -1512,7 +1477,7 @@ export default {
     font-size: 17px;
 }
 
-/* 플래너 저장 Btn css */
+/* 플래너 저장 버튼 css */
 .plannerSaveBtnBox {
     display: flex;
     position: fixed;
