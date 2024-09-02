@@ -1,5 +1,6 @@
 <template>
     <section>
+        <!-- 로딩 스피너 -->
         <div id="loading">
             <div
                 class="spinner-border m-5 text-info"
