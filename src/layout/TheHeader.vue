@@ -332,6 +332,7 @@ export default {
                 }
             } catch (error) {
                 console.error("Login error:", error);
+                alert("로그인 실패: 사용자 정보를 확인하세요.");
             }
         },
 

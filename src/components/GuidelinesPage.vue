@@ -152,14 +152,13 @@ export default {
             this.error = null;
 
             try {
-                const response = await this.$axios.get(
+                await this.$axios.get(
                     "http://34.64.132.0/api/polls/products/",
                     {
                         params: { api_type: "NoticeService2" },
                     }
                 );
 
-                console.log(response);
                 const guideData = await this.getGuideData("NoticeService2");
 
                 this.guideItems = guideData.data.data.map((item) => ({
@@ -184,7 +183,6 @@ export default {
                         params: { api_type: apiType },
                     }
                 );
-                console.log("response data: ", response);
 
                 return response;
             } catch (err) {
@@ -202,8 +200,6 @@ export default {
             await this.fetchGuideLocalContactData();
             await this.fetchGuideCountryFlagData();
 
-            console.log("국기 URL:", this.selectedCountry.flagUrl);
-
             this.selectedCountry = {
                 name: this.putCountry,
                 language: this.selectedCountry.lang,
@@ -213,8 +209,6 @@ export default {
                 entryRequirements: this.selectedCountry.entryRequirements,
                 flag: this.selectedCountry.flagUrl,
             };
-
-            console.log("최종 selectedCountry:", this.selectedCountry);
         },
 
         async fetchGuideCountryFlagData() {
@@ -247,8 +241,6 @@ export default {
                 }
 
                 this.selectedCountry.flagUrl = flagUrl;
-
-                console.log(`국기 URL (${this.putCountry}): ${flagUrl}`);
 
                 const flagImgElement =
                     document.getElementById("nationalflagImg");
@@ -295,12 +287,6 @@ export default {
                         lang,
                         religion: cleanReligion,
                     };
-
-                    console.log(`Capital (${this.putCountry}): ${capital}`);
-                    console.log(`Language (${this.putCountry}): ${lang}`);
-                    console.log(
-                        `Religion (${this.putCountry}): ${cleanReligion}`
-                    );
                 } else {
                     console.log("Country data not found.");
                 }
@@ -338,8 +324,6 @@ export default {
                 }
 
                 this.selectedCountry.entryRequirements = visaRequirement;
-
-                console.log(`비자 (${this.putCountry}): ${visaRequirement}`);
             } catch (err) {
                 this.error =
                     "외부 API에서 입국 비자 데이터를 가져오는데 실패했습니다.";
@@ -377,10 +361,6 @@ export default {
                         this.extractPhoneNumberFromRemark(contactRemark);
 
                     this.selectedCountry.contact = phoneNumber;
-
-                    console.log(
-                        `전화번호 (${this.putCountry}): ${phoneNumber}`
-                    );
                 } else {
                     console.log(
                         `국가 '${this.putCountry}'에 대한 정보가 없습니다.`
