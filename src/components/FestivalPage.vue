@@ -1,187 +1,201 @@
 <template>
     <div>
         <div class="festival-search">
-        <div class="festival-inputBox">
-            <input
-            type="text"
-            id="areaSearch"
-            v-model="searchText"
-            placeholder="축제 지역 검색"
-            />
-            <button class="festival-search-button" @click="fetchData">
-            <img src="@/assets/icons/search_btn.png" alt="검색 버튼" />
-            </button>
-        </div>
-        <div class="festival-dropdown-group">
-            <div class="festival-dropdown-container">
-            <select id="dropdown1" v-model="selectedMonth">
-                <option value="">시기 검색</option>
-                <option value="01">1월</option>
-                <option value="02">2월</option>
-                <option value="03">3월</option>
-                <option value="04">4월</option>
-                <option value="05">5월</option>
-                <option value="06">6월</option>
-                <option value="07">7월</option>
-                <option value="08">8월</option>
-                <option value="09">9월</option>
-                <option value="10">10월</option>
-                <option value="11">11월</option>
-                <option value="12">12월</option>
-            </select>
+            <div class="festival-inputBox">
+                <input
+                    type="text"
+                    id="areaSearch"
+                    v-model="searchText"
+                    placeholder="축제 지역 검색"
+                />
+                <button class="festival-search-button" @click="fetchData">
+                    <img src="@/assets/icons/search_btn.png" alt="검색 버튼" />
+                </button>
             </div>
-            <div class="festival-dropdown-container">
-            <select id="dropdown2" v-model="selectedCity">
-                <option value="">도시 검색</option>
-                <option value="1">서울</option>
-                <option value="6">부산</option>
-                <option value="4">대구</option>
-                <option value="2">인천</option>
-                <option value="5">광주</option>
-                <option value="3">대전</option>
-                <option value="7">울산</option>
-                <option value="8">세종</option>
-                <option value="31">경기도</option>
-                <option value="10">강원도</option>
-                <option value="33">충청북도</option>
-                <option value="34">충청남도</option>
-                <option value="37">전라북도</option>
-                <option value="38">전라남도</option>
-                <option value="35">경상북도</option>
-                <option value="36">경상남도</option>
-                <option value="39">제주도</option>
-            </select>
+            <div class="festival-dropdown-group">
+                <div class="festival-dropdown-container">
+                    <select id="dropdown1" v-model="selectedMonth">
+                        <option value="">시기 검색</option>
+                        <option value="01">1월</option>
+                        <option value="02">2월</option>
+                        <option value="03">3월</option>
+                        <option value="04">4월</option>
+                        <option value="05">5월</option>
+                        <option value="06">6월</option>
+                        <option value="07">7월</option>
+                        <option value="08">8월</option>
+                        <option value="09">9월</option>
+                        <option value="10">10월</option>
+                        <option value="11">11월</option>
+                        <option value="12">12월</option>
+                    </select>
+                </div>
+                <div class="festival-dropdown-container">
+                    <select id="dropdown2" v-model="selectedCity">
+                        <option value="">도시 검색</option>
+                        <option value="1">서울</option>
+                        <option value="6">부산</option>
+                        <option value="4">대구</option>
+                        <option value="2">인천</option>
+                        <option value="5">광주</option>
+                        <option value="3">대전</option>
+                        <option value="7">울산</option>
+                        <option value="8">세종</option>
+                        <option value="31">경기도</option>
+                        <option value="10">강원도</option>
+                        <option value="33">충청북도</option>
+                        <option value="34">충청남도</option>
+                        <option value="37">전라북도</option>
+                        <option value="38">전라남도</option>
+                        <option value="35">경상북도</option>
+                        <option value="36">경상남도</option>
+                        <option value="39">제주도</option>
+                    </select>
+                </div>
+                <button
+                    type="button"
+                    class="festival-search-button2"
+                    @click="fetchData"
+                >
+                    검색
+                </button>
             </div>
-            <button
-            type="button"
-            class="festival-search-button2"
-            @click="fetchData"
-            >
-            검색
-            </button>
-        </div>
         </div>
 
         <!-- 검색 결과 출력 -->
         <div class="festival-results">
-        <div
-            v-for="item in items"
-            :key="item.id"
-            class="festival-result-item"
-            @click="openModal(item)"
-        >
-            <img :src="item.imageUrl || require('@/assets/icons/logo.png')" alt="축제 이미지" />
-            <div>
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.date }}</p>
-            <p>{{ item.location }}</p>
+            <div
+                v-for="item in items"
+                :key="item.id"
+                class="festival-result-item"
+                @click="openModal(item)"
+            >
+                <img
+                    :src="item.imageUrl || require('@/assets/icons/logo.png')"
+                    alt="축제 이미지"
+                />
+                <div>
+                    <h4>{{ item.title }}</h4>
+                    <p>{{ item.date }}</p>
+                    <p>{{ item.location }}</p>
+                </div>
             </div>
-        </div>
         </div>
 
         <!-- 모달 -->
         <div
-        v-if="isModalOpen"
-        class="festival-modal-overlay"
-        @click="closeModal"
+            v-if="isModalOpen"
+            class="festival-modal-overlay"
+            @click="closeModal"
         >
-        <div class="festival-modal" @click.stop>
-            <button class="festival-close-button" @click="closeModal">
-            &times;
-            </button>
-            <div class="festival-modal-content">
-            <img
-                v-if="selectedItem.imageUrl"
-                :src="selectedItem.imageUrl"
-                alt="축제 이미지"
-                class="festival-modal-image"
-            />
-            <div class="festival-modal-info">
-                <h3>{{ selectedItem.title }}</h3>
-                <p>기간: {{ selectedItem.date }}</p>
-                <p>위치: {{ selectedItem.location }}</p>
-                <p>전화번호: {{ selectedItem.phone }}</p>
-                <p>홈페이지: <a :href="selectedItem.website" target="_blank">{{ selectedItem.website }}</a></p>
+            <div class="festival-modal" @click.stop>
+                <button class="festival-close-button" @click="closeModal">
+                    &times;
+                </button>
+                <div class="festival-modal-content">
+                    <img
+                        v-if="selectedItem.imageUrl"
+                        :src="selectedItem.imageUrl"
+                        alt="축제 이미지"
+                        class="festival-modal-image"
+                    />
+                    <div class="festival-modal-info">
+                        <h3>{{ selectedItem.title }}</h3>
+                        <p>기간: {{ selectedItem.date }}</p>
+                        <p>위치: {{ selectedItem.location }}</p>
+                        <p>전화번호: {{ selectedItem.phone }}</p>
+                        <p>
+                            홈페이지:
+                            <a :href="selectedItem.website" target="_blank">{{
+                                selectedItem.website
+                            }}</a>
+                        </p>
+                    </div>
+                </div>
+                <p class="festival-modal-description">
+                    설명: {{ selectedItem.description }}
+                </p>
             </div>
-            </div>
-            <p class="festival-modal-description">
-            설명: {{ selectedItem.description }}
-            </p>
         </div>
     </div>
-</div>
 </template>
 
 <script>
 export default {
-data() {
-    return {
-    searchText: '',
-    selectedMonth: '',
-    selectedCity: '',
-    items: [],
-    isModalOpen: false,
-    selectedItem: null,
-    };
-},
-methods: {
-    formatDate(dateStr) {
-    if (!dateStr || dateStr.length !== 8) return '날짜 정보 없음';
-    const year = dateStr.slice(0, 4);
-    const month = dateStr.slice(4, 6);
-    const day = dateStr.slice(6, 8);
-    return `${year}. ${month}. ${day}`;
+    data() {
+        return {
+            searchText: "",
+            selectedMonth: "",
+            selectedCity: "",
+            items: [],
+            isModalOpen: false,
+            selectedItem: null,
+        };
     },
+    methods: {
+        formatDate(dateStr) {
+            if (!dateStr || dateStr.length !== 8) return "날짜 정보 없음";
+            const year = dateStr.slice(0, 4);
+            const month = dateStr.slice(4, 6);
+            const day = dateStr.slice(6, 8);
+            return `${year}. ${month}. ${day}`;
+        },
 
-    async fetchData() {
-    const city = this.selectedCity;
-    const month = this.selectedMonth;
-    const searchText = this.searchText;
+        async fetchData() {
+            const city = this.selectedCity;
+            const month = this.selectedMonth;
+            const searchText = this.searchText;
 
-    let url = 'http://34.64.132.0/api/polls/products/?api_type=searchFestival1';
+            let url =
+                "http://34.64.132.0/api/polls/products/?api_type=searchFestival1";
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
 
-        this.items = data.response.body.items.item
-        .filter(item => {
-            const eventStartMonth = item.eventstartdate.slice(4, 6);
-            const address = (item.addr1 + ' ' + item.addr2);
+                this.items = data.response.body.items.item
+                    .filter((item) => {
+                        const eventStartMonth = item.eventstartdate.slice(4, 6);
+                        const address = item.addr1 + " " + item.addr2;
 
-            const isAddressMatch = searchText === '' || address.includes(searchText);
+                        const isAddressMatch =
+                            searchText === "" || address.includes(searchText);
 
-            return (isAddressMatch) &&
-            (!city || item.areacode === city) &&
-            (!month || eventStartMonth === month);
-        })
-        .map(item => ({
-            id: item.contentid,
-            title: item.title,
-            date: `${this.formatDate(item.eventstartdate)} ~ ${this.formatDate(item.eventenddate)}`,
-            location: `${item.addr1} ${item.addr2}`,
-            imageUrl: item.firstimage,
-            phone: item.tel,
-            website: item.homepage,
-            description: item.eventoverview,
-        }));
-    } catch (error) {
-        console.error("데이터를 가져오는 데 실패했습니다:", error);
-    }
+                        return (
+                            isAddressMatch &&
+                            (!city || item.areacode === city) &&
+                            (!month || eventStartMonth === month)
+                        );
+                    })
+                    .map((item) => ({
+                        id: item.contentid,
+                        title: item.title,
+                        date: `${this.formatDate(
+                            item.eventstartdate
+                        )} ~ ${this.formatDate(item.eventenddate)}`,
+                        location: `${item.addr1} ${item.addr2}`,
+                        imageUrl: item.firstimage,
+                        phone: item.tel,
+                        website: item.homepage,
+                        description: item.eventoverview,
+                    }));
+            } catch (error) {
+                console.error("데이터를 가져오는 데 실패했습니다:", error);
+            }
+        },
+
+        openModal(item) {
+            this.selectedItem = item;
+            this.isModalOpen = true;
+        },
+        closeModal() {
+            this.isModalOpen = false;
+            this.selectedItem = null;
+        },
     },
-
-    openModal(item) {
-    this.selectedItem = item;
-    this.isModalOpen = true;
+    created() {
+        this.fetchData();
     },
-    closeModal() {
-    this.isModalOpen = false;
-    this.selectedItem = null;
-    }
-},
-created() {
-    this.fetchData(); 
-}
 };
 </script>
 
@@ -277,13 +291,13 @@ select {
 
 .festival-result-item img {
     width: 100%;
-    height: 200px; 
-    object-fit: cover; 
-    margin-bottom: 15px; 
+    height: 200px;
+    object-fit: cover;
+    margin-bottom: 15px;
 }
 
 .festival-result-item h3 {
-    margin: 15px 0; 
+    margin: 15px 0;
 }
 .festival-result-item p {
     margin: 5px 0;
@@ -330,8 +344,8 @@ select {
 
 .festival-modal-image {
     max-width: 200px;
-    height: 200px; 
-    object-fit: cover; 
+    height: 200px;
+    object-fit: cover;
 }
 
 .festival-modal-info {

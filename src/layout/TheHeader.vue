@@ -1,7 +1,7 @@
 <template>
-    <!-- 헤더 -->
     <header>
         <nav id="nav_main">
+            <!-- 홈 로고 이미지 버튼 -->
             <router-link to="/">
                 <img
                     src="@/assets/icons/logo.png"
@@ -218,7 +218,7 @@
                                 </div>
                                 <hr />
                             </div>
-                            <!-- 일정 하나라도 있을 경우 -->
+                            <!-- 일정 있을 경우 -->
                             <div v-if="schedules.length > 0">
                                 <div
                                     v-for="(title, index) in schedules"
@@ -251,6 +251,7 @@
                             <!-- 리스트 모달 일정목록 끝 -->
                         </div>
                     </div>
+                    <!-- 새 여행 일정 추가 버튼 -->
                     <div class="modal-footer">
                         <button
                             class="nav-btn"
@@ -286,6 +287,8 @@ export default {
     },
     methods: {
         ...mapActions(["updateUserId", "removeUserId"]),
+
+        /* 리스트 모달 일정 목록 설정 */
         async fetchSchedules(user_id) {
             try {
                 document.querySelector(".listModalSearchBox input").value = "";
@@ -295,8 +298,6 @@ export default {
                 );
                 const plannerData = response.data;
 
-                console.log("API Response Data:", plannerData);
-
                 plannerData.forEach((item) => {
                     if (item.user_id === user_id) {
                         this.schedules.push({
@@ -305,12 +306,12 @@ export default {
                         });
                     }
                 });
-
-                console.log("Filtered Schedules:", this.schedules);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         },
+
+        /* 로그인 */
         async logIn() {
             try {
                 const response = await this.$axios.post(
@@ -323,7 +324,6 @@ export default {
                 const { username } = response.data;
                 if (username) {
                     this.updateUserId(username);
-                    console.log(username);
                     alert("귀하의 방문을 환영합니다.");
                     this.$router.push({ name: "MainPage" });
                 } else {
@@ -332,17 +332,24 @@ export default {
                 }
             } catch (error) {
                 console.error("Login error:", error);
+                alert("로그인 실패: 사용자 정보를 확인하세요.");
             }
         },
 
+        /* 로그아웃 */
         logOut() {
+            localStorage.setItem("isLoggedIn", "false");
             this.removeUserId();
+            alert("안녕히 가십시오.");
             this.$router.push({ name: "MainPage" });
         },
 
+        /* 회원가입 페이지로 이동 */
         goSignPage() {
             this.$router.push({ name: "SignPage" });
         },
+
+        /* 리스트 모달 일정제목 검색 */
         async searchList() {
             try {
                 const searchInput = document
@@ -377,30 +384,37 @@ export default {
                 console.error("Error searching data:", error);
             }
         },
+
+        /* 리스트 모달 여행일정 수정 */
         reviseThisList(index) {
             const planner_id = this.getScheduleIndexPlanner_id(index);
 
             const plannerUrl = `/PlannerPage?planner_id=${planner_id}`;
             window.open(plannerUrl, "_blank");
         },
+
+        /* 리스트 모달 여행일정 삭제 */
         deleteThisList(index) {
             const plannerId = this.getScheduleIndexPlanner_id(index);
 
-            const deleteUrl = `http://34.64.132.0/api/planners/${plannerId}/delete/`;
-            console.log("Delete URL:", deleteUrl);
+            const deleteApi = `http://34.64.132.0/api/planners/${plannerId}/delete/`;
 
-            fetch(deleteUrl, {
+            fetch(deleteApi, {
                 method: "DELETE",
             });
 
             this.schedules.splice(index, 1);
         },
+
+        /* 리스트 모달 여행일정을 플래너 아이디로 변환 */
         getScheduleIndexPlanner_id(index) {
             const scheduleItem = this.schedules[index];
             const plannerId = scheduleItem.planner_id;
 
             return plannerId;
         },
+
+        /* 리스트 모달 여행일정 생성 */
         openPlannerPage() {
             const user_id = this.user_id;
             const title = "여행 제목";

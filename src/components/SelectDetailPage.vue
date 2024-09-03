@@ -19,9 +19,14 @@
                         class="travel-item"
                         @click="updateMap(item.googleMapsUri)"
                     >
-                        <img :src="item.imgSrc || '@/assets/icons/logo.png'" alt="Travel Image" />
+                        <img
+                            :src="item.imgSrc || '@/assets/icons/logo.png'"
+                            alt="Travel Image"
+                        />
                         <div class="info">
-                            <div class="title">{{ item.title || '제목 없음' }}</div>
+                            <div class="title">
+                                {{ item.title || "제목 없음" }}
+                            </div>
                             <button
                                 class="more-button"
                                 @click.stop="openModal(item)"
@@ -102,17 +107,29 @@
                 <span class="close" @click="closeModal">&times;</span>
                 <div class="modal-body">
                     <div class="modal-image">
-                        <img :src="item.imgSrc || '@/assets/icons/logo.png'" alt="Travel Image" />
+                        <img
+                            :src="item.imgSrc || '@/assets/icons/logo.png'"
+                            alt="Travel Image"
+                        />
                     </div>
                     <div class="modal-details">
-                        <h2>{{ item.title || '정보 없음' }}</h2>
-                        <p>별점: {{ item.rating || '정보 없음' }}</p>
-                        <p>상세 위치: {{ item.formattedAddress || '정보 없음' }}</p>
-                        <p>전화번호: {{ item.nationalPhoneNumber || '정보 없음' }}</p>
+                        <h2>{{ item.title || "정보 없음" }}</h2>
+                        <p>별점: {{ item.rating || "정보 없음" }}</p>
+                        <p>
+                            상세 위치:
+                            {{ item.formattedAddress || "정보 없음" }}
+                        </p>
+                        <p>
+                            전화번호:
+                            {{ item.nationalPhoneNumber || "정보 없음" }}
+                        </p>
                         <p>
                             홈페이지:
                             <a
-                                v-if="item.websiteUri && item.websiteUri !== '정보 없음'"
+                                v-if="
+                                    item.websiteUri &&
+                                    item.websiteUri !== '정보 없음'
+                                "
                                 :href="item.websiteUri"
                                 target="_blank"
                             >
@@ -131,10 +148,17 @@
                     >
                         <div class="review-content">
                             <p>
-                                <strong>{{ review.authorAttribution?.displayName || '익명' }}</strong>
-                                (별점: {{ review.rating || '정보 없음' }})
+                                <strong>{{
+                                    review.authorAttribution?.displayName ||
+                                    "익명"
+                                }}</strong>
+                                (별점: {{ review.rating || "정보 없음" }})
                             </p>
-                            <p v-html="review.originalText?.text || '댓글 없음'"></p>
+                            <p
+                                v-html="
+                                    review.originalText?.text || '댓글 없음'
+                                "
+                            ></p>
                             <hr />
                         </div>
                     </div>
@@ -220,7 +244,7 @@ export default {
                 this.travelItems = await Promise.all(
                     placeData.map(async (item) => {
                         let imgSrc = "";
-                        const photoName = item.photos?.[0]?.name; 
+                        const photoName = item.photos?.[0]?.name;
 
                         if (photoName) {
                             try {
@@ -245,10 +269,13 @@ export default {
                             title: item.displayName.text || "제목 없음",
                             imgSrc: imgSrc || "",
                             rating: item.rating || "평점 정보 없음",
-                            formattedAddress: item.formattedAddress || "주소 정보 없음",
-                            nationalPhoneNumber: item.nationalPhoneNumber || "전화번호 정보 없음",
+                            formattedAddress:
+                                item.formattedAddress || "주소 정보 없음",
+                            nationalPhoneNumber:
+                                item.nationalPhoneNumber ||
+                                "전화번호 정보 없음",
                             websiteUri: item.websiteUri || "웹사이트 정보 없음",
-                            reviews: item.reviews || [], 
+                            reviews: item.reviews || [],
                             placeId: item.id || "",
                             photo_name: photoName || "",
                             googleMapsUri: item.googleMapsUri || "",
@@ -283,7 +310,7 @@ export default {
                 this.travelItems = await Promise.all(
                     placeData.map(async (item) => {
                         let imgSrc = "";
-                        const photoName = item.photos?.[0]?.name; 
+                        const photoName = item.photos?.[0]?.name;
 
                         if (photoName) {
                             try {
@@ -308,10 +335,13 @@ export default {
                             title: item.displayName.text || "제목 없음",
                             imgSrc: imgSrc || "",
                             rating: item.rating || "평점 정보 없음",
-                            formattedAddress: item.formattedAddress || "주소 정보 없음",
-                            nationalPhoneNumber: item.nationalPhoneNumber || "전화번호 정보 없음",
+                            formattedAddress:
+                                item.formattedAddress || "주소 정보 없음",
+                            nationalPhoneNumber:
+                                item.nationalPhoneNumber ||
+                                "전화번호 정보 없음",
                             websiteUri: item.websiteUri || "웹사이트 정보 없음",
-                            reviews: item.reviews || [], 
+                            reviews: item.reviews || [],
                             placeId: item.id || "",
                             photo_name: photoName || "",
                             googleMapsUri: item.googleMapsUri || "",

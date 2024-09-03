@@ -1,5 +1,15 @@
 <template>
     <section>
+        <!-- 로딩 스피너 -->
+        <div id="loading">
+            <div
+                class="spinner-border m-5 text-info"
+                style="width: 5rem; height: 5rem; border-width: 0.6rem"
+                role="status"
+            >
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
         <!-- 검색바-->
         <div class="guideLinesSearchBox">
             <div class="d-flex" role="search">
@@ -147,19 +157,12 @@ export default {
         };
     },
     methods: {
+        /* 외교부 공지사항 표시 */
         async fetchGuideData() {
             this.loading = true;
             this.error = null;
 
             try {
-                const response = await this.$axios.get(
-                    "http://34.64.132.0/api/polls/products/",
-                    {
-                        params: { api_type: "NoticeService2" },
-                    }
-                );
-
-                console.log(response);
                 const guideData = await this.getGuideData("NoticeService2");
 
                 this.guideItems = guideData.data.data.map((item) => ({
@@ -168,11 +171,14 @@ export default {
                 }));
             } catch (err) {
                 this.error = "Failed to fetch data from external API";
+                document.getElementById("loading").style.display = "none";
             } finally {
                 this.loading = false;
+                document.getElementById("loading").style.display = "none";
             }
         },
 
+        /* 외교부 공지사항 정보 설정 */
         async getGuideData(apiType) {
             this.loading = true;
             this.error = null;
@@ -184,7 +190,6 @@ export default {
                         params: { api_type: apiType },
                     }
                 );
-                console.log("response data: ", response);
 
                 return response;
             } catch (err) {
@@ -194,29 +199,30 @@ export default {
             }
         },
 
+        /* 외교부 검색 정보 설정 */
         async showGuideLinesDeatilModal() {
+            document.getElementById("loading").style.display = "block";
             this.selectedCountry = {};
 
+            await this.fetchGuideCountryFlagData();
             await this.fetchGuideOverviewGnrlInfoData();
             await this.fetchGuideEntranceVisaData();
             await this.fetchGuideLocalContactData();
-            await this.fetchGuideCountryFlagData();
-
-            console.log("국기 URL:", this.selectedCountry.flagUrl);
 
             this.selectedCountry = {
+                flag: this.selectedCountry.flagUrl,
                 name: this.putCountry,
                 language: this.selectedCountry.lang,
                 religion: this.selectedCountry.religion,
                 capital: this.selectedCountry.capital,
                 contact: this.selectedCountry.contact,
                 entryRequirements: this.selectedCountry.entryRequirements,
-                flag: this.selectedCountry.flagUrl,
             };
 
-            console.log("최종 selectedCountry:", this.selectedCountry);
+            document.getElementById("loading").style.display = "none";
         },
 
+        /* 외교부 검색 정보의 국기 url 설정 */
         async fetchGuideCountryFlagData() {
             this.loading = true;
             this.error = null;
@@ -236,19 +242,15 @@ export default {
 
                 if (countryData) {
                     flagUrl = countryData.download_url;
-                }
-
-                if (!flagUrl) {
-                    alert(
-                        "입력하신 정보를 찾을 수 없습니다. 페이지를 새로고침합니다."
-                    );
+                } else if (!flagUrl) {
+                    document.getElementById(
+                        "nationalflagImg"
+                    ).style.backgroundImage = "none";
+                    alert("입력하신 정보를 찾을 수 없습니다.");
                     location.reload();
-                    return;
                 }
 
                 this.selectedCountry.flagUrl = flagUrl;
-
-                console.log(`국기 URL (${this.putCountry}): ${flagUrl}`);
 
                 const flagImgElement =
                     document.getElementById("nationalflagImg");
@@ -263,6 +265,7 @@ export default {
             }
         },
 
+        /* 외교부 검색 정보의 언어,종교,수도 설정 */
         async fetchGuideOverviewGnrlInfoData() {
             this.loading = true;
             this.error = null;
@@ -295,12 +298,6 @@ export default {
                         lang,
                         religion: cleanReligion,
                     };
-
-                    console.log(`Capital (${this.putCountry}): ${capital}`);
-                    console.log(`Language (${this.putCountry}): ${lang}`);
-                    console.log(
-                        `Religion (${this.putCountry}): ${cleanReligion}`
-                    );
                 } else {
                     console.log("Country data not found.");
                 }
@@ -312,6 +309,7 @@ export default {
             }
         },
 
+        /* 외교부 검색 정보의 비자 요건 설정 */
         async fetchGuideEntranceVisaData() {
             this.loading = true;
             this.error = null;
@@ -338,8 +336,6 @@ export default {
                 }
 
                 this.selectedCountry.entryRequirements = visaRequirement;
-
-                console.log(`비자 (${this.putCountry}): ${visaRequirement}`);
             } catch (err) {
                 this.error =
                     "외부 API에서 입국 비자 데이터를 가져오는데 실패했습니다.";
@@ -348,6 +344,7 @@ export default {
             }
         },
 
+        /* 외교부 검색 정보의 현지 연락처 설정 */
         async fetchGuideLocalContactData() {
             this.loading = true;
             this.error = null;
@@ -377,10 +374,6 @@ export default {
                         this.extractPhoneNumberFromRemark(contactRemark);
 
                     this.selectedCountry.contact = phoneNumber;
-
-                    console.log(
-                        `전화번호 (${this.putCountry}): ${phoneNumber}`
-                    );
                 } else {
                     console.log(
                         `국가 '${this.putCountry}'에 대한 정보가 없습니다.`
@@ -394,6 +387,7 @@ export default {
             }
         },
 
+        /* 외교부 현지 연락처 정보 가공 */
         extractPhoneNumberFromRemark(contactRemark) {
             const phoneMatch = contactRemark.match(
                 /대표번호\(근무시간 중\)\s*:\s*([\d\s\-()]+)/
@@ -418,6 +412,20 @@ export default {
 </script>
 
 <style>
+/* 로딩중 화면 */
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
 /* 가이드라인 검색바 css */
 .guideLinesSearchBox {
     display: flex;
