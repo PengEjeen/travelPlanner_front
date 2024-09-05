@@ -260,6 +260,11 @@ export default {
         },
     },
     mounted() {
+        if (!this.user_id) {
+            alert("로그아웃이 확인되어 홈페이지로 이동합니다.");
+            this.$router.push({ name: "MainPage" });
+        }
+
         window.addEventListener("beforeunload", this.handleBeforeUnload);
         this.fetchMyPageData();
     },
@@ -269,6 +274,10 @@ export default {
     },
     /* 내정보 다른 페이지로 이동할 경우 경고창 띄우기 */
     beforeRouteLeave(to, from, next) {
+        if (!this.user_id) {
+            this.isFormDirty = false;
+        }
+
         if (!this.isFormDirty) {
             next();
         } else {

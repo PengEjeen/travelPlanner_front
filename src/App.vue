@@ -8,7 +8,9 @@ import TheHeader from "@/layout/TheHeader.vue";
 
 export default {
     name: "App",
-    components: { TheHeader },
+    components: {
+        TheHeader,
+    },
 };
 </script>
 

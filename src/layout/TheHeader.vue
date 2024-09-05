@@ -338,9 +338,10 @@ export default {
 
         /* 로그아웃 */
         logOut() {
-            localStorage.setItem("isLoggedIn", "false");
             this.removeUserId();
-            alert("안녕히 가십시오.");
+            alert(
+                "로그아웃이 확인되어 홈페이지로 이동합니다.\n다른 열어둔 창이 있으시다면 닫기 혹은 새로고침(F5)를 실행하십시오."
+            );
             this.$router.push({ name: "MainPage" });
         },
 

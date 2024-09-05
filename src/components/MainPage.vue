@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <section class="mainPageSlideBox">
         <!-- 슬라이드 -->
         <div
             id="carouselExampleDark"
@@ -12,7 +12,6 @@
                     data-bs-target="#carouselExampleDark"
                     data-bs-slide-to="0"
                     class="active"
-                    aria-current="true"
                     aria-label="Slide 1"
                 ></button>
                 <button
@@ -46,91 +45,172 @@
                 data-bs-ride="carousel"
             >
                 <div class="carousel-inner">
-                    <div class="carousel-item active">
+                    <div class="carousel-item active" data-bs-interval="5000">
                         <img
                             src="@/assets/imgs/slide1.png"
                             class="d-block w-100"
                             alt="slide1"
                         />
+                        <p class="mainSlideSpan1">
+                            반복되는 일상, 벗어나고 싶지 않나요?
+                        </p>
+                        <p class="mainSlideSpan1_plus">우리 떠나봐요</p>
                     </div>
-                    <div class="carousel-item">
+                    <div class="carousel-item" data-bs-interval="4500">
                         <img
                             src="@/assets/imgs/slide2.jpg"
                             class="d-block w-100"
                             alt="slide2"
                         />
+                        <p class="mainSlideSpan2">새로움을 원하시나요?</p>
                     </div>
-                    <div class="carousel-item">
+                    <div class="carousel-item" data-bs-interval="4500">
                         <img
                             src="@/assets/imgs/slide3.jpg"
                             class="d-block w-100"
                             alt="slide3"
                         />
+                        <p class="mainSlideSpan3">관광을 원하시나요?</p>
                     </div>
-                    <div class="carousel-item">
+                    <div class="carousel-item" data-bs-interval="4500">
                         <img
                             src="@/assets/imgs/slide4.jpg"
                             class="carouseld-block w-100"
                             alt="slide4"
                         />
+                        <p class="mainSlideSpan4">야경을 원하시나요?</p>
                     </div>
-                    <div class="carousel-item">
+                    <div class="carousel-item" data-bs-interval="4500">
                         <img
                             src="@/assets/imgs/slide5.png"
                             class="d-block w-100"
                             alt="slide5"
                         />
+                        <p class="mainSlideSpan5">휴식을 원하시나요?</p>
                     </div>
                 </div>
             </div>
+            <button
+                class="carousel-control-prev"
+                type="button"
+                data-bs-target="#carouselExampleDark"
+                data-bs-slide="prev"
+            >
+                <span
+                    class="carousel-control-prev-icon"
+                    aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button
+                class="carousel-control-next"
+                type="button"
+                data-bs-target="#carouselExampleDark"
+                data-bs-slide="next"
+            >
+                <span
+                    class="carousel-control-next-icon"
+                    aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
     </section>
-
-    <!-- 푸터 -->
-    <footer>
-        <p>
-            캡스톤 | 3조 <br />
-            조남영 정규민 박성엽 방유민<br />
-            한신대학교<br />
-            <span>Copyright &copy; 3조. All Rights Reserved.</span>
-        </p>
-    </footer>
+    <TheFooter />
 </template>
 
 <script>
-export default {};
+import TheFooter from "@/layout/TheFooter.vue";
+
+export default {
+    name: "MainPage",
+    components: {
+        TheFooter,
+    },
+};
 </script>
 
 <style>
-/* 슬라이드 css */
-.carousel-item img {
-    height: 100vh;
+.mainPageSlideBox {
+    margin-top: 60px;
 }
 
-.carousel-indicators button {
-    border-radius: 50% !important;
+/* 슬라이드 이미지 css */
+.mainPageSlideBox .carousel-item img {
+    height: calc(100vh - 60px);
+}
+
+/* 슬라이드 흥보 글 css */
+.mainSlideSpan1 {
+    position: absolute;
+    left: 32%;
+    top: 80px;
+    font-size: 50px;
+    font-weight: bold;
+    font-style: italic;
+    color: rgba(54, 212, 222, 1);
+}
+
+.mainSlideSpan1_plus {
+    position: absolute;
+    left: 20%;
+    top: 470px;
+    font-size: 50px;
+    font-weight: bold;
+    font-style: italic;
+    color: rgba(54, 212, 222, 1);
+}
+
+.mainSlideSpan2 {
+    position: absolute;
+    left: 60%;
+    top: 560px;
+    font-size: 50px;
+    font-weight: bold;
+    font-style: italic;
+    color: rgba(54, 212, 222, 1);
+}
+
+.mainSlideSpan3 {
+    position: absolute;
+    left: 60%;
+    top: 580px;
+    font-size: 50px;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.mainSlideSpan4 {
+    position: absolute;
+    left: 60%;
+    top: 560px;
+    font-size: 50px;
+    font-weight: bold;
+    font-style: italic;
+    color: rgba(54, 212, 222, 1);
+}
+
+.mainSlideSpan5 {
+    position: absolute;
+    left: 60%;
+    top: 560px;
+    font-size: 50px;
+    font-weight: bold;
+    font-style: italic;
+}
+
+/* 슬라이드 하단 버튼 css */
+.mainPageSlideBox .carousel-indicators button {
+    border-radius: 50%;
     background-color: white !important;
-    height: 15px !important;
-    width: 15px !important;
-    margin: 10px !important;
+    height: 18px;
+    width: 18px;
+    margin: 10px;
 }
 
-/* 푸터 css */
-footer {
-    height: 140px;
-    background-color: gray;
-    text-align: left;
-    background: linear-gradient(to right, #d6f0f4, #91afe2);
-}
-
-footer p {
-    padding-left: 50px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-}
-
-footer p span {
-    display: inline-block;
-    margin-top: 12px;
+.mainPageSlideBox .carousel-control-prev-icon,
+.carousel-control-next-icon {
+    height: 120px !important;
+    width: 120px !important;
 }
 </style>
