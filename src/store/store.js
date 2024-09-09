@@ -2,9 +2,19 @@ import { createStore } from "vuex";
 
 const store = createStore({
     state() {
+        let userId = null;
+        let placeId = "";
+
+        try {
+            userId = localStorage.getItem("user_id");
+            placeId = localStorage.getItem("place_id");
+        } catch (e) {
+            console.error("LocalStorage 접근 중 오류 발생:", e);
+        }
+
         return {
-            userId: localStorage.getItem("user_id") || null,
-            placeId: localStorage.getItem("place_id") || "",
+            userId: userId || null,
+            placeId: placeId || "",
         };
     },
     mutations: {

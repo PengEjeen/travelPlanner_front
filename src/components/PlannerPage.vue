@@ -44,8 +44,8 @@
                     :style="{ width: inputTitleWidth }"
                     class="plannerPlanInputTitle"
                 />
-                <button class="printImgBtn">
-                    <img src="@/assets/icons/print.png" alt="프린트 이미지" />
+                <button>
+                    <img src="@/assets/icons/auto.png" alt="자동일정 이미지" />
                 </button>
             </div>
 
@@ -77,7 +77,13 @@
                                 :key="index"
                                 :id="'simple-list-item-' + (index + 1)"
                             >
-                                <div class="plannerDayBox plannerDayFont">
+                                <div
+                                    class="plannerDayBox plannerDayFont"
+                                    draggable="true"
+                                    @dragstart="onDragStart(index)"
+                                    @dragover.prevent
+                                    @drop="onDrop(index)"
+                                >
                                     Day {{ index + 1 }}
                                     <!-- 데이 메뉴바 -->
                                     <div
@@ -452,8 +458,8 @@
             >
                 <div class="offcanvas-header">
                     <div>
+                        <p id="offcanvasImg"></p>
                         <h1>{{ selectedDetailPlace.name }}</h1>
-                        <br />
                         <p>
                             위치:
                             <strong>
@@ -565,6 +571,7 @@ export default {
                 reviews: [],
             },
             isFormDirty: true,
+            draggedDayIndex: null,
         };
     },
     methods: {
@@ -607,11 +614,15 @@ export default {
                     await this.fetchPhotoData(placeIds);
                     await this.fetchRouteData(placeIds);
                 }
-
-                document.getElementById("loading").style.display = "none";
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById("loading").style.display = "none";
+            }
+            document.getElementById("loading").style.display = "none";
+            if (!this.user_id) {
+                alert(
+                    "로그아웃이 확인되어 홈페이지로 이동합니다.\n다른 열어둔 창이 있으시다면 닫기 혹은 새로고침(F5)를 실행하십시오."
+                );
+                this.$router.push({ name: "MainPage" });
             }
         },
 
@@ -1014,6 +1025,13 @@ export default {
 
                 const infoData = infoResponse.data;
 
+                this.selectedDetailPlace.imgUrl = this.getPlacePhoto(place_id);
+                if (this.selectedDetailPlace.imgUrl) {
+                    document.getElementById(
+                        "offcanvasImg"
+                    ).style.backgroundImage = `url(${this.selectedDetailPlace.imgUrl})`;
+                }
+
                 this.selectedDetailPlace.name = this.getPlaceName(place_id);
 
                 this.selectedDetailPlace.rating =
@@ -1043,6 +1061,8 @@ export default {
                     `Error fetching place details for ${place_id}:`,
                     error
                 );
+                this.selectedDetailPlace.imgUrl = "이미지 url 오류";
+
                 this.selectedDetailPlace.rating = "평점 정보 오류";
 
                 this.selectedDetailPlace.address = "주소 정보 오류";
@@ -1095,12 +1115,27 @@ export default {
             }
         },
 
+        /* 드래그 시작 시 선택한 Day의 인덱스를 저장 */
+        onDragStart(index) {
+            this.draggedDayIndex = index;
+        },
+
+        /* 드래그한 Day와 Drop한 Day의 위치를 변경 */
+        onDrop(index) {
+            const draggedDay = this.cells[this.draggedDayIndex];
+            this.cells.splice(this.draggedDayIndex, 1);
+            this.cells.splice(index, 0, draggedDay);
+            this.draggedDayIndex = null;
+        },
+
         /* 플래너 닫기&새로고침 할 경우 경고창 띄우기 */
         handleBeforeUnload(event) {
-            const message =
-                "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
-            event.returnValue = message;
-            return message;
+            if (this.isFormDirty) {
+                const message =
+                    "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+                event.returnValue = message;
+                return message;
+            }
         },
     },
     mounted() {
@@ -1117,21 +1152,29 @@ export default {
     },
     /* 플래너 다른 페이지로 이동할 경우 경고창 띄우기 */
     beforeRouteLeave(to, from, next) {
-        const message =
-            "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+        if (!this.user_id) {
+            this.isFormDirty = false;
+        }
 
-        const answer = window.confirm(message);
-        if (answer) {
+        if (!this.isFormDirty) {
             next();
         } else {
-            next(false);
+            const message =
+                "변경 사항이 저장되지 않을 수 있습니다. 정말로 떠나시겠습니까?";
+
+            const answer = window.confirm(message);
+            if (answer) {
+                next();
+            } else {
+                next(false);
+            }
         }
     },
 };
 </script>
 
 <style>
-/* 로딩중 화면 */
+/* 로딩 스피너 css */
 #loading {
     position: fixed;
     top: 0;
@@ -1223,12 +1266,6 @@ export default {
 
 .plannerPlanInputTitle::placeholder {
     color: black;
-}
-
-/* 플래너 프린트 이미지 css  */
-.printImgBtn img {
-    width: 60px;
-    height: 60px;
 }
 
 /* 플래너 정보창 css */
@@ -1456,6 +1493,14 @@ export default {
 .detailInfoOffcanvas .offcanvas-header div p {
     float: left;
     margin-left: 20px;
+}
+
+.detailInfoOffcanvas #offcanvasImg {
+    width: 330px;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .detailInfoOffcanvas .offcanvasHeaderHr {

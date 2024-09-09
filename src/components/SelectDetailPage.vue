@@ -1,4 +1,13 @@
 <template>
+    <div id="loading">
+        <div
+            class="spinner-border m-5 text-info"
+            style="width: 5rem; height: 5rem; border-width: 0.6rem"
+            role="status"
+        >
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
     <div class="main-container">
         <div class="sidebar">
             <div class="input-box">
@@ -229,6 +238,7 @@ export default {
             this.error = null;
 
             try {
+                document.getElementById("loading").style.display = "block";
                 const response = await this.$axios.get(
                     "http://34.64.132.0/api/googlemaps/searchNearPlace/",
                     {
@@ -287,6 +297,12 @@ export default {
             } finally {
                 this.loading = false;
             }
+            document.getElementById("loading").style.display = "none";
+
+            if (!this.user_id) {
+                alert("로그아웃이 확인되어 홈페이지로 이동합니다.");
+                this.$router.push({ name: "MainPage" });
+            }
         },
 
         async fetchTravelData2() {
@@ -294,6 +310,7 @@ export default {
             this.error = null;
 
             try {
+                document.getElementById("loading").style.display = "block";
                 const searchText = this.textSearch.trim();
                 const response = await this.$axios.get(
                     "http://34.64.132.0/api/googlemaps/searchNearPlace/",
@@ -353,6 +370,7 @@ export default {
             } finally {
                 this.loading = false;
             }
+            document.getElementById("loading").style.display = "none";
         },
 
         openModal(item) {
@@ -407,7 +425,6 @@ export default {
                 const mapResponse = await this.$axios.get(
                     `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${revisePlaceId}`
                 );
-
                 const mapData = mapResponse.data;
 
                 console.log(
@@ -430,6 +447,7 @@ export default {
                 this.mapSrc =
                     "https://maps.google.com/?cid=13072433878939821035&output=svembed";
             }
+            document.getElementById("loading").style.display = "none";
         },
     },
     mounted() {
@@ -439,6 +457,19 @@ export default {
 </script>
 
 <style scoped>
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
 .main-container {
     display: flex;
     height: 100vh;
