@@ -1,4 +1,13 @@
 <template>
+    <div id="loading">
+        <div
+            class="spinner-border m-5 text-info"
+            style="width: 5rem; height: 5rem; border-width: 0.6rem"
+            role="status"
+        >
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
     <div class="main-container">
         <div class="sidebar">
             <div class="input-box">
@@ -229,6 +238,7 @@ export default {
             this.error = null;
 
             try {
+                document.getElementById("loading").style.display = "block";
                 const response = await this.$axios.get(
                     "http://34.64.132.0/api/googlemaps/searchNearPlace/",
                     {
@@ -287,6 +297,7 @@ export default {
             } finally {
                 this.loading = false;
             }
+            document.getElementById("loading").style.display = "none";
         },
 
         async fetchTravelData2() {
@@ -294,6 +305,7 @@ export default {
             this.error = null;
 
             try {
+                document.getElementById("loading").style.display = "block";
                 const searchText = this.textSearch.trim();
                 const response = await this.$axios.get(
                     "http://34.64.132.0/api/googlemaps/searchNearPlace/",
@@ -353,6 +365,7 @@ export default {
             } finally {
                 this.loading = false;
             }
+            document.getElementById("loading").style.display = "none";
         },
 
         openModal(item) {
@@ -407,7 +420,6 @@ export default {
                 const mapResponse = await this.$axios.get(
                     `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${revisePlaceId}`
                 );
-
                 const mapData = mapResponse.data;
 
                 console.log(
@@ -430,6 +442,7 @@ export default {
                 this.mapSrc =
                     "https://maps.google.com/?cid=13072433878939821035&output=svembed";
             }
+            document.getElementById("loading").style.display = "none";
         },
     },
     mounted() {
@@ -461,236 +474,3 @@ export default {
 .drawer-toggle-button.open {
     left: 700px;
 }
-
-.drawer-toggle-button img {
-    width: 50px;
-    height: 50px;
-}
-
-.drawer {
-    position: fixed;
-    top: 0;
-    left: 350px;
-    width: 350px;
-    height: 100vh;
-    background-color: #f5f5f5;
-    border-left: 1px solid #ddd;
-    border-right: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-}
-
-.drawer-content {
-    padding: 20px;
-    flex: 1;
-}
-
-.drawer-search-boxes {
-    display: flex;
-    flex-direction: column;
-    margin-top: 60px;
-    margin-bottom: 20px;
-}
-
-.drawer-label {
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-.drawer-search-boxes input {
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.drawer-search-button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 4px;
-    text-align: center;
-    width: 30%;
-    margin-left: auto;
-}
-
-.drawer-search-button:hover {
-    background-color: #0056b3;
-}
-
-.input-box {
-    margin-top: 8vh;
-    display: flex;
-    align-items: center;
-}
-
-input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 10px;
-}
-
-.search-button img {
-    width: 24px;
-    height: 24px;
-}
-
-.travel-destination {
-    margin-top: 20px;
-}
-
-.travel-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    border: 2px solid;
-    border-radius: 8px;
-    position: relative;
-    width: 90%;
-}
-
-.travel-item img {
-    width: 100px;
-    height: auto;
-    border-radius: 8px;
-    margin-right: 20px;
-}
-
-.title {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: left;
-    margin-bottom: 20px;
-}
-
-.more-button {
-    padding: 5px 10px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.more-button:hover {
-    background-color: #e0e0e0;
-}
-
-.travel-add-button {
-    position: absolute;
-    right: -65px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-}
-
-.travel-add-button img {
-    width: 34px;
-    height: 34px;
-}
-
-/* 모달 스타일 */
-.modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 60%;
-    max-width: 600px;
-    max-height: 80%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-body {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.modal-image {
-    flex: 0 0 40%;
-}
-
-.modal-image img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
-
-.modal-details {
-    flex: 1;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    text-align: left;
-}
-
-.modal-details h2 {
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
-.close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.modal-review {
-    margin-top: 20px;
-    overflow-y: auto;
-}
-
-.review-item {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 15px;
-}
-
-.review-author-photo {
-    display: none;
-}
-
-.review-content {
-    flex: 1;
-    text-align: left;
-}
-
-.map-container {
-    margin-top: 60px;
-    flex: 1;
-}
-
-iframe {
-    width: 100%;
-    height: 100%;
-}
-
-.exchangeRateBox {
-    position: absolute;
-    margin-left: 60px;
-    bottom: 30px;
-}
-</style>

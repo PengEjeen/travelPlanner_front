@@ -1,4 +1,13 @@
 <template>
+    <div id="loading">
+        <div
+            class="spinner-border m-5 text-info"
+            style="width: 5rem; height: 5rem; border-width: 0.6rem"
+            role="status"
+        >
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
     <div>
         <div class="festival-search">
             <div class="festival-inputBox">
@@ -42,7 +51,7 @@
                         <option value="7">울산</option>
                         <option value="8">세종</option>
                         <option value="31">경기도</option>
-                        <option value="10">강원도</option>
+                        <option value="32">강원도</option>
                         <option value="33">충청북도</option>
                         <option value="34">충청남도</option>
                         <option value="37">전라북도</option>
@@ -94,26 +103,28 @@
                 </button>
                 <div class="festival-modal-content">
                     <img
-                        v-if="selectedItem.imageUrl"
-                        :src="selectedItem.imageUrl"
+                        :src="
+                            selectedItem.imageUrl ||
+                            require('@/assets/icons/logo.png')
+                        "
                         alt="축제 이미지"
                         class="festival-modal-image"
                     />
                     <div class="festival-modal-info">
-                        <h3>{{ selectedItem.title }}</h3>
-                        <p>기간: {{ selectedItem.date }}</p>
-                        <p>위치: {{ selectedItem.location }}</p>
-                        <p>전화번호: {{ selectedItem.phone }}</p>
+                        <h3>{{ selectedItem.title || "정보 없음" }}</h3>
+                        <p>기간: {{ selectedItem.date || "정보 없음" }}</p>
+                        <p>위치: {{ selectedItem.location || "정보 없음" }}</p>
+                        <p>전화번호: {{ selectedItem.phone || "정보 없음" }}</p>
                         <p>
                             홈페이지:
                             <a :href="selectedItem.website" target="_blank">{{
-                                selectedItem.website
+                                selectedItem.website || "정보 없음"
                             }}</a>
                         </p>
                     </div>
                 </div>
                 <p class="festival-modal-description">
-                    설명: {{ selectedItem.description }}
+                    설명: {{ selectedItem.description || "정보 없음" }}
                 </p>
             </div>
         </div>
@@ -167,6 +178,7 @@ export default {
                             (!month || eventStartMonth === month)
                         );
                     })
+                    .slice(0, 50)
                     .map((item) => ({
                         id: item.contentid,
                         title: item.title,
@@ -176,12 +188,51 @@ export default {
                         location: `${item.addr1} ${item.addr2}`,
                         imageUrl: item.firstimage,
                         phone: item.tel,
-                        website: item.homepage,
-                        description: item.eventoverview,
+                        website: null,
+                        description: null,
                     }));
+
+                await this.fetchDetailData();
             } catch (error) {
                 console.error("데이터를 가져오는 데 실패했습니다:", error);
             }
+        },
+
+        async fetchDetailData() {
+            const detailRequests = this.items.map(async (item) => {
+                const detailUrl = `http://34.64.132.0/api/polls/products/?api_type=detailCommon1&contentId=${item.id}`;
+
+                try {
+                    const response = await fetch(detailUrl);
+                    const detailData = await response.json();
+
+                    const detailItem = detailData.response.body.items.item[0];
+
+                    const homepageHTML = detailItem.homepage;
+                    const urlMatch = homepageHTML.match(/<a[^>]*>(.*?)<\/a>/);
+                    let homepageUrl;
+                    if (urlMatch) {
+                        const url = urlMatch[1];
+                        if (/^https?:\/\//i.test(url)) {
+                            homepageUrl = url;
+                        } else {
+                            homepageUrl = `https://${url}`;
+                        }
+                    } else {
+                        homepageUrl = "홈페이지 정보 없음";
+                    }
+
+                    item.website = homepageUrl;
+                    item.description = detailItem.overview || "설명 없음";
+                } catch (error) {
+                    console.error(
+                        `Detail data fetching failed for contentId ${item.id}:`,
+                        error
+                    );
+                }
+            });
+            document.getElementById("loading").style.display = "none";
+            await Promise.all(detailRequests);
         },
 
         openModal(item) {
@@ -356,5 +407,18 @@ select {
 .festival-modal-description {
     margin-top: 20px;
     text-align: left;
+}
+
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
 }
 </style>
