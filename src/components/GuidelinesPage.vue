@@ -176,17 +176,16 @@ export default {
                     title: item.title,
                     content: item.txt_origin_cn,
                 }));
-                document.getElementById("loading").style.display = "none";
-
-                if (!this.user_id) {
-                    alert("로그아웃이 확인되어 홈페이지로 이동합니다.");
-                    this.$router.push({ name: "MainPage" });
-                }
             } catch (err) {
                 this.error = "Failed to fetch data from external API";
-                document.getElementById("loading").style.display = "none";
             } finally {
                 this.loading = false;
+            }
+            document.getElementById("loading").style.display = "none";
+
+            if (!this.user_id) {
+                alert("로그아웃이 확인되어 홈페이지로 이동합니다.");
+                this.$router.push({ name: "MainPage" });
             }
         },
 

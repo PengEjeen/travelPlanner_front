@@ -132,7 +132,14 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
+    computed: {
+        ...mapGetters({
+            user_id: "userId",
+        }),
+    },
     data() {
         return {
             searchText: "",
@@ -232,6 +239,11 @@ export default {
                 }
             });
             document.getElementById("loading").style.display = "none";
+
+            if (!this.user_id) {
+                alert("로그아웃이 확인되어 홈페이지로 이동합니다.");
+                this.$router.push({ name: "MainPage" });
+            }
             await Promise.all(detailRequests);
         },
 
