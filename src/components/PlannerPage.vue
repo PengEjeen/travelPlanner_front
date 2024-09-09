@@ -77,7 +77,13 @@
                                 :key="index"
                                 :id="'simple-list-item-' + (index + 1)"
                             >
-                                <div class="plannerDayBox plannerDayFont">
+                                <div
+                                    class="plannerDayBox plannerDayFont"
+                                    draggable="true"
+                                    @dragstart="onDragStart(index)"
+                                    @dragover.prevent
+                                    @drop="onDrop(index)"
+                                >
                                     Day {{ index + 1 }}
                                     <!-- 데이 메뉴바 -->
                                     <div
@@ -563,8 +569,9 @@ export default {
                 internationalPhoneNum: "",
                 websiteUri: "",
                 reviews: [],
-                isFormDirty: true,
             },
+            isFormDirty: true,
+            draggedDayIndex: null,
         };
     },
     methods: {
@@ -1109,6 +1116,19 @@ export default {
                     error.response?.data || error.message
                 );
             }
+        },
+
+        /* 드래그 시작 시 선택한 Day의 인덱스를 저장 */
+        onDragStart(index) {
+            this.draggedDayIndex = index;
+        },
+
+        /* 드래그한 Day와 Drop한 Day의 위치를 변경 */
+        onDrop(index) {
+            const draggedDay = this.cells[this.draggedDayIndex];
+            this.cells.splice(this.draggedDayIndex, 1);
+            this.cells.splice(index, 0, draggedDay);
+            this.draggedDayIndex = null;
         },
 
         /* 플래너 닫기&새로고침 할 경우 경고창 띄우기 */
