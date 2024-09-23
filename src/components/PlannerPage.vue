@@ -10,7 +10,7 @@
         </div>
     </div>
     <div class="plannerPlanBox">
-        <!-- 사이드 스크롤스파이 -->
+        <!-- 사이드 플랜 스크롤스파이 -->
         <div class="plannerPlanScrollspyBox">
             <div class="plannerPlanScrollspyHeader">
                 <div>
@@ -240,10 +240,12 @@
                                                 "
                                                 class="plannerdetailRouteBtn"
                                                 type="button"
+                                                data-bs-toggle="offcanvas"
+                                                data-bs-target="#routeOffcanvasScrolling"
+                                                aria-controls="routeOffcanvasScrolling"
                                                 @click="
-                                                    toggleDetailRoute(
-                                                        index,
-                                                        detailIndex
+                                                    getPlaceRoute(
+                                                        detail.place_id
                                                     )
                                                 "
                                             >
@@ -285,155 +287,6 @@
                                             type="text"
                                             v-model="detail.memo"
                                         />
-                                    </div>
-                                    <!-- 길 안내 -->
-                                    <div
-                                        v-show="
-                                            activeDetailRoute.dayGroup ===
-                                                index &&
-                                            activeDetailRoute.detailIndex ===
-                                                detailIndex
-                                        "
-                                        class="placeRouteBox"
-                                        v-if="
-                                            detailIndex !==
-                                            dayGroup.day.length - 1
-                                        "
-                                    >
-                                        <div class="placeRouteBox">
-                                            <div
-                                                v-for="(
-                                                    routeArray, routeIndex
-                                                ) in getPlaceRoute(
-                                                    detail.place_id
-                                                )"
-                                                :key="routeIndex"
-                                            >
-                                                <div
-                                                    v-if="!routeArray"
-                                                    class="route_item"
-                                                >
-                                                    <img
-                                                        src="@/assets/icons/connectRouteLine.png"
-                                                        alt="경로 수직선 이미지"
-                                                        id="connectRouteLineImg"
-                                                    />
-                                                    거리가 너무 멉니다.
-                                                </div>
-                                                <div
-                                                    v-if="
-                                                        routeArray &&
-                                                        !routeArray.transitDetails
-                                                    "
-                                                    class="route_item"
-                                                >
-                                                    <img
-                                                        src="@/assets/icons/connectRouteLine.png"
-                                                        alt="경로 수직선 이미지"
-                                                        id="connectRouteLineImg"
-                                                    />
-                                                    도보
-                                                </div>
-                                                <div
-                                                    v-if="
-                                                        routeArray.transitDetails
-                                                    "
-                                                    class="route_item"
-                                                >
-                                                    <img
-                                                        :src="
-                                                            routeArray
-                                                                .transitDetails
-                                                                ?.transitLine
-                                                                ?.vehicle
-                                                                ?.iconUri ||
-                                                            '@/assets/icons/connectRouteLine.png'
-                                                        "
-                                                        alt="경로 수직선 이미지"
-                                                        :id="
-                                                            routeArray
-                                                                .transitDetails
-                                                                ?.transitLine
-                                                                ?.vehicle
-                                                                ?.type ===
-                                                            'SUBWAY'
-                                                                ? 'connectRouteTransferImg'
-                                                                : 'connectRouteLineImg'
-                                                        "
-                                                    />
-                                                    <div class="route_details">
-                                                        <span
-                                                            id="routeLocationFont"
-                                                        >
-                                                            {{
-                                                                routeArray
-                                                                    .transitDetails
-                                                                    ?.stopDetails
-                                                                    ?.departureStop
-                                                                    ?.name
-                                                            }}
-                                                            {{
-                                                                routeArray
-                                                                    .transitDetails
-                                                                    ?.localizedValues
-                                                                    ?.departureTime
-                                                                    ?.time?.text
-                                                            }}
-                                                        </span>
-                                                        <div
-                                                            :style="{
-                                                                color: routeArray
-                                                                    .transitDetails
-                                                                    ?.transitLine
-                                                                    ?.color,
-                                                            }"
-                                                        >
-                                                            {{
-                                                                routeArray
-                                                                    .transitDetails
-                                                                    ?.transitLine
-                                                                    ?.name
-                                                            }}
-                                                            <span
-                                                                v-if="
-                                                                    routeArray
-                                                                        .transitDetails
-                                                                        ?.transitLine
-                                                                        ?.nameShort
-                                                                "
-                                                            >
-                                                                (
-                                                                {{
-                                                                    routeArray
-                                                                        .transitDetails
-                                                                        ?.transitLine
-                                                                        ?.nameShort
-                                                                }}
-                                                                )
-                                                            </span>
-                                                        </div>
-                                                        <span
-                                                            id="routeLocationFont"
-                                                        >
-                                                            {{
-                                                                routeArray
-                                                                    .transitDetails
-                                                                    ?.stopDetails
-                                                                    ?.arrivalStop
-                                                                    ?.name
-                                                            }}
-                                                            {{
-                                                                routeArray
-                                                                    .transitDetails
-                                                                    ?.localizedValues
-                                                                    ?.arrivalTime
-                                                                    ?.time?.text
-                                                            }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -536,6 +389,457 @@
                 </div>
             </div>
         </div>
+
+        <!-- 길찾기(오프 캔버스) -->
+        <div class="routeInfoOffcanvas">
+            <div
+                class="offcanvas offcanvas-end"
+                data-bs-scroll="true"
+                data-bs-backdrop="false"
+                tabindex="-1"
+                id="routeOffcanvasScrolling"
+                aria-labelledby="routeOffcanvasScrollingLabel"
+            >
+                <div class="offcanvas-header">
+                    <div>
+                        <img
+                            src="@/assets/icons/depart.png"
+                            alt="출발지 이미지"
+                        />{{ selectedRoute.name }}
+                    </div>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <hr class="routeOffcanvasHeaderHr" />
+                <div class="offcanvas-body">
+                    <!-- 길 안내 -->
+                    <div
+                        v-for="(routeArray, routeIndex) in selectedRoute.route"
+                        :key="routeIndex"
+                    >
+                        <!-- 경로 찾기 불가능(거리문제)일 경우 -->
+                        <div v-if="!routeArray" class="route_item">
+                            <img
+                                src="@/assets/icons/walk.png"
+                                alt="도보 이미지"
+                                class="routeImg"
+                            />
+                            <b> 거리가 너무 멉니다. </b>
+                        </div>
+
+                        <!-- 도보일 경우 -->
+                        <div
+                            v-if="routeArray && !routeArray.transitDetails"
+                            class="route_item"
+                            :style="{
+                                marginTop: '10px',
+                                marginBottom: '10px',
+                            }"
+                        >
+                            <div>
+                                <img
+                                    src="@/assets/icons/walk.png"
+                                    alt="도보 이미지"
+                                    class="routeImg"
+                                />
+                                <div><b>도보 이동</b></div>
+                            </div>
+                        </div>
+                        <div
+                            v-if="
+                                routeArray &&
+                                !routeArray.transitDetails &&
+                                routeIndex !== selectedRoute.route.length - 1
+                            "
+                            class="verticalContainer"
+                        >
+                            <div class="vertical-dots">.....</div>
+                            <hr class="horizontal-line" />
+                        </div>
+                        <div
+                            v-if="routeArray.transitDetails"
+                            class="route_item"
+                        >
+                            <!-- 기차로 이동할 경우 -->
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'HEAVY_RAIL'
+                                "
+                            >
+                                <div>
+                                    <img
+                                        :src="
+                                            routeArray.transitDetails
+                                                ?.transitLine?.vehicle?.iconUri
+                                        "
+                                        alt="기차 이미지"
+                                        class="routeImg"
+                                    />
+                                    <div class="route_details">
+                                        <b>
+                                            {{
+                                                routeArray.transitDetails
+                                                    ?.stopDetails?.departureStop
+                                                    ?.name
+                                            }}
+                                            승차
+                                        </b>
+                                        <p>
+                                            <span
+                                                :style="{
+                                                    color: routeArray
+                                                        .transitDetails
+                                                        ?.transitLine?.color,
+                                                }"
+                                            >
+                                                {{
+                                                    routeArray.transitDetails
+                                                        ?.transitLine?.name
+                                                }}
+                                            </span>
+                                            {{
+                                                routeArray.transitDetails
+                                                    ?.headsign
+                                            }}
+                                            방면<br />
+                                            <span
+                                                class="takeTimeAndStopCountFont"
+                                            >
+                                                <b>
+                                                    {{
+                                                        takeTime(
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.stopDetails
+                                                                ?.departureTime,
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.stopDetails
+                                                                ?.arrivalTime
+                                                        )
+                                                    }},
+                                                    {{
+                                                        routeArray
+                                                            .transitDetails
+                                                            ?.stopCount
+                                                    }}개 역 이동
+                                                </b>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'HEAVY_RAIL'
+                                "
+                                class="verticalContainer"
+                            >
+                                <hr
+                                    class="vertical-line"
+                                    :style="{
+                                        backgroundColor: routeArray
+                                            .transitDetails?.transitLine?.color
+                                            ? routeArray.transitDetails
+                                                  ?.transitLine.color
+                                            : 'black',
+                                    }"
+                                />
+                                <hr class="horizontal-line" />
+                            </div>
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'HEAVY_RAIL'
+                                "
+                            >
+                                <img
+                                    :src="
+                                        routeArray.transitDetails?.transitLine
+                                            ?.vehicle?.iconUri
+                                    "
+                                    alt="기차 이미지"
+                                    class="routeImg"
+                                    :style="{
+                                        backgroundColor:
+                                            routeArray.transitDetails
+                                                ?.transitLine?.color,
+                                    }"
+                                />
+                                <b>
+                                    {{
+                                        routeArray.transitDetails?.stopDetails
+                                            ?.arrivalStop?.name
+                                    }}
+                                    하차
+                                </b>
+                            </div>
+
+                            <!-- 버스로 이동할 경우 -->
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'BUS'
+                                "
+                            >
+                                <div>
+                                    <img
+                                        :src="
+                                            routeArray.transitDetails
+                                                ?.transitLine?.vehicle?.iconUri
+                                        "
+                                        alt="버스 이미지"
+                                        class="routeImg"
+                                        :style="{
+                                            backgroundColor:
+                                                routeArray.transitDetails
+                                                    ?.transitLine?.color,
+                                        }"
+                                    />
+                                    <div class="route_details">
+                                        <b>
+                                            {{
+                                                routeArray.transitDetails
+                                                    ?.stopDetails?.departureStop
+                                                    ?.name
+                                            }}
+                                            승차
+                                        </b>
+                                        <p>
+                                            <span
+                                                :style="{
+                                                    color: routeArray
+                                                        .transitDetails
+                                                        ?.transitLine?.color,
+                                                }"
+                                            >
+                                                {{
+                                                    routeArray.transitDetails
+                                                        ?.transitLine
+                                                        ?.nameShort
+                                                }}번
+                                                {{
+                                                    countTime(
+                                                        routeArray
+                                                            .transitDetails
+                                                            ?.headway
+                                                    )
+                                                }}
+                                            </span>
+                                            <br />
+                                            <span
+                                                class="takeTimeAndStopCountFont"
+                                            >
+                                                <b>
+                                                    {{
+                                                        takeTime(
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.stopDetails
+                                                                ?.departureTime,
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.stopDetails
+                                                                ?.arrivalTime
+                                                        )
+                                                    }},
+                                                    {{
+                                                        routeArray
+                                                            .transitDetails
+                                                            ?.stopCount
+                                                    }}개 정류장 이동
+                                                </b>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'BUS'
+                                "
+                                class="verticalContainer"
+                            >
+                                <hr
+                                    class="vertical-line"
+                                    :style="{
+                                        backgroundColor:
+                                            routeArray.transitDetails
+                                                ?.transitLine?.color,
+                                    }"
+                                />
+                                <hr class="horizontal-line" />
+                            </div>
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'BUS'
+                                "
+                            >
+                                <img
+                                    :src="
+                                        routeArray.transitDetails?.transitLine
+                                            ?.vehicle?.iconUri
+                                    "
+                                    alt="버스 이미지"
+                                    class="routeImg"
+                                    :style="{
+                                        backgroundColor:
+                                            routeArray.transitDetails
+                                                ?.transitLine?.color,
+                                    }"
+                                />
+                                <b>
+                                    {{
+                                        routeArray.transitDetails?.stopDetails
+                                            ?.arrivalStop?.name
+                                    }}
+                                    하차
+                                </b>
+                            </div>
+
+                            <!-- 지하철로 이동할 경우 -->
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'SUBWAY'
+                                "
+                            >
+                                <div>
+                                    <img
+                                        :src="
+                                            routeArray.transitDetails
+                                                ?.transitLine?.vehicle?.iconUri
+                                        "
+                                        alt="지하철 이미지"
+                                        class="routeImg"
+                                        :style="{
+                                            backgroundColor:
+                                                routeArray.transitDetails
+                                                    ?.transitLine?.color,
+                                        }"
+                                    />
+                                    <div class="route_details">
+                                        <b>
+                                            {{
+                                                routeArray.transitDetails
+                                                    ?.stopDetails?.departureStop
+                                                    ?.name
+                                            }}
+                                            승차
+                                        </b>
+                                        <p>
+                                            <span
+                                                :style="{
+                                                    color: routeArray
+                                                        .transitDetails
+                                                        ?.transitLine?.color,
+                                                }"
+                                            >
+                                                {{
+                                                    routeArray.transitDetails
+                                                        ?.transitLine?.nameShort
+                                                }}
+                                            </span>
+                                            {{
+                                                routeArray.transitDetails
+                                                    ?.headsign
+                                            }}
+                                            방면
+                                            <br />
+                                            <span
+                                                class="takeTimeAndStopCountFont"
+                                            >
+                                                <b>
+                                                    {{
+                                                        takeTime(
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.stopDetails
+                                                                ?.departureTime,
+                                                            routeArray
+                                                                .transitDetails
+                                                                ?.stopDetails
+                                                                ?.arrivalTime
+                                                        )
+                                                    }},
+                                                    {{
+                                                        routeArray
+                                                            .transitDetails
+                                                            ?.stopCount
+                                                    }}개 역 이동
+                                                </b>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'SUBWAY'
+                                "
+                                class="verticalContainer"
+                            >
+                                <hr
+                                    class="vertical-line"
+                                    :style="{
+                                        backgroundColor:
+                                            routeArray.transitDetails
+                                                ?.transitLine?.color,
+                                    }"
+                                />
+                                <hr class="horizontal-line" />
+                            </div>
+                            <div
+                                v-if="
+                                    routeArray.transitDetails?.transitLine
+                                        ?.vehicle?.type === 'SUBWAY'
+                                "
+                            >
+                                <img
+                                    :src="
+                                        routeArray.transitDetails?.transitLine
+                                            ?.vehicle?.iconUri
+                                    "
+                                    alt="지하철 이미지"
+                                    class="routeImg"
+                                    :style="{
+                                        backgroundColor:
+                                            routeArray.transitDetails
+                                                ?.transitLine?.color,
+                                    }"
+                                />
+                                <b>
+                                    {{
+                                        routeArray.transitDetails?.stopDetails
+                                            ?.arrivalStop?.name
+                                    }}
+                                    하차
+                                </b>
+                            </div>
+                        </div>
+                        <div
+                            v-if="
+                                routeArray.transitDetails &&
+                                routeIndex !== selectedRoute.route.length - 1
+                            "
+                            class="verticalContainer"
+                        >
+                            <div class="vertical-dots">.....</div>
+                            <hr class="horizontal-line" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -557,7 +861,6 @@ export default {
             activeMenu: null,
             activeDetailMenu: { dayGroup: null, detailIndex: null },
             activeDetailMemo: { dayGroup: null, detailIndex: null },
-            activeDetailRoute: { dayGroup: null, detailIndex: null },
             cells: [],
             place_names: [],
             place_photos: [],
@@ -570,6 +873,7 @@ export default {
                 websiteUri: "",
                 reviews: [],
             },
+            selectedRoute: [],
             isFormDirty: true,
             draggedDayIndex: null,
         };
@@ -867,8 +1171,17 @@ export default {
 
         /* 플래너 장소 주소 설정 */
         getPlaceRoute(placeId) {
+            this.selectedRoute = "";
             const route = this.place_routes.find((p) => p.id === placeId);
-            return route ? route.route : "";
+
+            if (route) {
+                const name = this.getPlaceName(placeId);
+                this.selectedRoute = { route: route.route, name };
+            } else {
+                this.selectedRoute = { route: "", name: "" };
+            }
+
+            console.log(this.selectedRoute);
         },
 
         /* 플래너 장소 변경 */
@@ -1002,18 +1315,6 @@ export default {
             dayGroup.day.splice(detailIndex, 1);
         },
 
-        /* 플래너 세부정보 길안내 On/Off */
-        toggleDetailRoute(index, detailIndex) {
-            if (
-                this.activeDetailRoute.dayGroup === index &&
-                this.activeDetailRoute.detailIndex === detailIndex
-            ) {
-                this.activeDetailRoute = { dayGroup: null, detailIndex: null };
-            } else {
-                this.activeDetailRoute = { dayGroup: index, detailIndex };
-            }
-        },
-
         /* 플래너 장소의 상세정보 설정 */
         async fetchPlannerDetailInfoData(place_id) {
             this.selectedDetailPlace = {};
@@ -1126,6 +1427,43 @@ export default {
             this.cells.splice(this.draggedDayIndex, 1);
             this.cells.splice(index, 0, draggedDay);
             this.draggedDayIndex = null;
+        },
+
+        /* 길찾기 이동 소요시간 계산 */
+        takeTime(departureTime, arrivalTime) {
+            const date1 = new Date(departureTime);
+            const date2 = new Date(arrivalTime);
+
+            const diffInMs = Math.abs(date2 - date1);
+
+            const totalMinutes = Math.floor(diffInMs / (1000 * 60));
+
+            if (totalMinutes < 60) {
+                return `${totalMinutes}분`;
+            }
+
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            return `${hours}시간 ${minutes}분`;
+        },
+
+        /* 길찾기 대중교통 대기 시간 */
+        countTime(timeInSeconds) {
+            if (!timeInSeconds) {
+                return "";
+            }
+
+            const seconds = parseInt(timeInSeconds.replace("s", ""), 10);
+
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+
+            if (seconds < 60) {
+                return `: ${seconds}초`;
+            }
+
+            return `: ${minutes}분 ${remainingSeconds}초`;
         },
 
         /* 플래너 닫기&새로고침 할 경우 경고창 띄우기 */
@@ -1436,48 +1774,95 @@ export default {
 }
 
 /* 세부사항 길 안내 css */
-.placeRouteBox {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    margin-left: 20px;
+.routeInfoOffcanvas .offcanvas-header {
+    background-color: lightblue;
+    border: 3px solid;
+    border-bottom: none;
 }
 
-.route_item {
+.routeInfoOffcanvas .offcanvas-header div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.routeInfoOffcanvas .offcanvas-header div img {
+    height: 50px;
+    width: 50px;
+    margin-right: 20px;
+}
+
+.routeInfoOffcanvas .offcanvas-header .btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.routeInfoOffcanvas .routeOffcanvasHeaderHr {
+    height: 10px;
+    margin: 0px;
+    background-color: black;
+}
+
+.routeInfoOffcanvas .offcanvas-body {
+    flex-direction: column;
+    border: 3px solid;
+    border-top: none;
+}
+
+.routeInfoOffcanvas .route_item div {
     display: flex;
     align-items: center;
     font-size: 15px;
 }
 
-#connectRouteLineImg {
-    width: 100px;
-    height: 30px;
+.routeInfoOffcanvas .routeImg {
+    height: 45px;
+    margin-right: 20px;
 }
 
-#connectRouteTransferImg {
-    width: 100px;
-    height: 50px;
+.routeInfoOffcanvas .takeTimeAndStopCountFont {
+    font-size: 13px;
 }
 
-.route_details {
+.routeInfoOffcanvas .route_item div div .route_details {
     display: flex;
     flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
 }
 
-.route_details #routeLocationFont {
-    color: rgba(54, 212, 222, 1);
-    font-weight: bold;
+.routeInfoOffcanvas .offcanvas-body .verticalContainer {
+    display: flex;
+    align-items: center;
 }
 
-.route_details div {
-    padding: 5px 10px;
+.routeInfoOffcanvas .offcanvas-body .vertical-line {
+    padding-right: 5px;
+    height: 30px;
+    border: none;
+    margin: 0px;
+    margin-left: 18px;
+}
+
+.routeInfoOffcanvas .offcanvas-body .verticalContainer .vertical-dots {
+    writing-mode: vertical-lr;
+    font-size: 30px;
+    line-height: 1;
+    color: gray;
+    margin-left: 15px;
+}
+
+.routeInfoOffcanvas .offcanvas-body .verticalContainer .horizontal-line {
+    flex-grow: 1;
+    width: 256px;
+    border: none;
+    border-top: 1px solid black;
 }
 
 /* 장소의 세부정보창(오프 캔버스) css */
-.detailInfoOffcanvas {
-    border-radius: 5px solid !important;
-}
-
 .detailInfoOffcanvas .offcanvas-header .btn-close {
     position: absolute;
     top: 10px;
