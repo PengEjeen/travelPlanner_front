@@ -80,7 +80,7 @@ export default {
 
             try {
                 const response = await axios.post(
-                    "http://34.64.132.0/api/common/register/",
+                    "https://travelplanner.duckdns.org/api/common/register/",
                     {
                         username: this.username,
                         password: this.password,

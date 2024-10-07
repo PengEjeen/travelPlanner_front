@@ -138,7 +138,7 @@ export default {
 
             try {
                 const myInfoResponse = await this.$axios.get(
-                    `http://34.64.132.0/api/common/userinfo/${this.user_id}/`
+                    `https://travelplanner.duckdns.org/api/common/userinfo/${this.user_id}/`
                 );
 
                 const myInfoData = myInfoResponse.data;
@@ -210,7 +210,7 @@ export default {
                 };
 
                 await this.$axios.put(
-                    `http://34.64.132.0/api/common/userinfo/update/${this.user_id}/`,
+                    `https://travelplanner.duckdns.org/api/common/userinfo/update/${this.user_id}/`,
                     {
                         headers: {
                             "Content-Type": "application/json; charset=utf-8",
@@ -235,7 +235,7 @@ export default {
         async withdrawAccount() {
             try {
                 const deleteResponse = await this.$axios.delete(
-                    `http://34.64.132.0/api/common/delete/${this.user_id}/`
+                    `https://travelplanner.duckdns.org/api/common/delete/${this.user_id}/`
                 );
                 console.log("Delete response:", deleteResponse.data);
                 alert("귀하의 계정 삭제가 완료되었습니다.");

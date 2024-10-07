@@ -27,6 +27,15 @@
                 >
                     Search
                 </button>
+                <!-- llm 버튼 -->
+                <button
+                    id="llmBtn"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#llmOffcanvasScrolling"
+                    aria-controls="llmOffcanvasScrolling"
+                >
+                    <img src="@/assets/icons/llm.png" alt="llm 이미지" />
+                </button>
             </div>
         </div>
 
@@ -135,6 +144,76 @@
             </div>
         </div>
     </div>
+
+    <!-- llm 오프 캔버스 -->
+    <div class="llmOffcanvas">
+        <div
+            class="offcanvas offcanvas-end"
+            data-bs-scroll="true"
+            data-bs-backdrop="false"
+            tabindex="-1"
+            id="llmOffcanvasScrolling"
+            aria-labelledby="llmOffcanvasScrollingLabel"
+        >
+            <div class="offcanvas-header">
+                <div>
+                    <img src="@/assets/icons/llm.png" alt="llm 이미지" /> 채팅
+                </div>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close"
+                ></button>
+            </div>
+            <div class="offcanvas-body">
+                <div v-if="llmAnswer.length === 0">
+                    <span class="aiName">
+                        <img src="@/assets/icons/ai.png" alt="ai 이미지" />:
+                    </span>
+                    <div class="conversation">
+                        안녕하세요!<br />저는 당신을 위한 AI 도우미입니다.<br />질문을
+                        영어로 입력해주세요.
+                    </div>
+                </div>
+                <div v-else v-for="(item, index) in llmAnswer" :key="index">
+                    <div class="userQuestion">
+                        <span class="userName">
+                            :
+                            <img
+                                src="@/assets/icons/logo.png"
+                                alt="로고 이미지"
+                            />
+                        </span>
+                        <div class="conversation">
+                            {{ item[0] }}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="aiName">
+                            <img src="@/assets/icons/ai.png" alt="ai 이미지" />:
+                        </span>
+                        <div class="conversation">
+                            {{ item[1] }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="offcanvas-footer">
+                <div class="d-flex" role="search">
+                    <input
+                        class="form-control me-2"
+                        type="search"
+                        placeholder="질문(영어) 입력"
+                        v-model="putQuestion"
+                    />
+                    <button class="llmQuestionBtn" @click="answerQuestion()">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -161,6 +240,7 @@ export default {
             },
             loading: false,
             error: null,
+            llmAnswer: [],
         };
     },
     methods: {
@@ -196,7 +276,7 @@ export default {
 
             try {
                 const response = await this.$axios.get(
-                    "http://34.64.132.0/api/polls/products/",
+                    "https://travelplanner.duckdns.org/api/polls/products/",
                     {
                         params: { api_type: apiType },
                     }
@@ -415,6 +495,24 @@ export default {
                 return "전화번호 없음";
             }
         },
+
+        /* llm 질문 및 대답 출력 */
+        async answerQuestion() {
+            document.getElementById("loading").style.display = "block";
+            try {
+                // const answerResponse = await this.$axios.get(
+                //     `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                // );
+
+                // console.log(answerResponse)
+                const aiResponse = "예시 답변";
+
+                this.llmAnswer.push([this.putQuestion, aiResponse]);
+            } catch (error) {
+                console.error("Error answering question:", error);
+            }
+            document.getElementById("loading").style.display = "none";
+        },
     },
     mounted() {
         this.fetchGuideData();
@@ -459,6 +557,10 @@ export default {
     color: rgba(54, 212, 222, 1);
 }
 
+.guideLinesSearchBox #llmBtn {
+    margin-left: 15px;
+}
+
 /* 가이드라인 게시판 css */
 .guideLinesBoardBox {
     margin-top: 50px;
@@ -491,6 +593,7 @@ export default {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    border: 1px solid black;
 }
 
 .guideLinesDeatilModalBox .modal-header div {
@@ -526,5 +629,102 @@ export default {
 
 .guideLinesDeatilModalBox .form-group p {
     margin: 0;
+}
+
+/* llm 오프캔버스 css */
+.llmOffcanvas .offcanvas-header {
+    background-color: lightblue;
+    border: 3px solid;
+    border-bottom: 1px solid gray;
+}
+
+.llmOffcanvas .offcanvas-header div {
+    display: flex;
+    align-items: center;
+}
+
+.llmOffcanvas .offcanvas-header div img {
+    height: 30px;
+    margin-right: 5px;
+}
+
+.llmOffcanvas .offcanvas-header .btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.llmOffcanvas .offcanvas-body {
+    background-color: lightblue;
+    border: 3px solid;
+    border-top: none;
+    border-bottom: none;
+    float: left;
+    text-align: left;
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.llmOffcanvas .userQuestion {
+    text-align: right;
+}
+
+.llmOffcanvas .conversation {
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 20px;
+    background-color: rgba(54, 212, 222, 1);
+}
+
+.llmOffcanvas .userName,
+.llmOffcanvas .aiName {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.llmOffcanvas .userName img,
+.llmOffcanvas .aiName img {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.llmOffcanvas .userName img {
+    height: 50px;
+}
+
+.llmOffcanvas .aiName img {
+    height: 40px;
+}
+
+.llmOffcanvas .offcanvas-footer {
+    background-color: lightblue;
+    border: 3px solid;
+}
+
+.llmOffcanvas .offcanvas-footer .d-flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: bold;
+    margin: 10px 20px;
+}
+
+.llmOffcanvas .offcanvas-footer .d-flex input {
+    border: 2px solid black;
+}
+
+.llmOffcanvas .llmQuestionBtn {
+    border: 2px solid black;
+    border-radius: 5px;
+    color: white;
+    background-color: rgba(54, 212, 222, 1);
+}
+
+.llmOffcanvas .llmQuestionBtn:hover {
+    background-color: white;
+    color: rgba(54, 212, 222, 1);
 }
 </style>

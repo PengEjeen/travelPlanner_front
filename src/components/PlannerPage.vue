@@ -890,7 +890,7 @@ export default {
         async fetchPlannerData(planner_id) {
             try {
                 const response = await this.$axios.get(
-                    `http://34.64.132.0/api/planners/${planner_id}/`,
+                    `https://travelplanner.duckdns.org/api/planners/${planner_id}/`,
                     {
                         headers: {
                             Accept: "application/json",
@@ -937,7 +937,7 @@ export default {
             for (const { place_id } of placeIds) {
                 try {
                     const placeResponse = await this.$axios.get(
-                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                        `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const placeData = placeResponse.data;
@@ -980,7 +980,7 @@ export default {
             for (const { place_id } of placeIds) {
                 try {
                     const photoResponse = await this.$axios.get(
-                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                        `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const photoData = photoResponse.data;
@@ -1030,7 +1030,7 @@ export default {
                     }
 
                     const photoResponse = await this.$axios.get(
-                        `http://34.64.132.0/api/googlemaps/placePhotos/?place_url=${type}`
+                        `https://travelplanner.duckdns.org/api/googlemaps/placePhotos/?place_url=${type}`
                     );
 
                     const base64Data = photoResponse.data;
@@ -1072,7 +1072,7 @@ export default {
             for (const { place_id } of placeIds) {
                 try {
                     const addressResponse = await this.$axios.get(
-                        `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                        `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                     );
 
                     const addressData = addressResponse.data;
@@ -1117,7 +1117,7 @@ export default {
                     }
 
                     const routeResponse = await this.$axios.get(
-                        `http://34.64.132.0/api/googlemaps/placeRoutes/?origin_text=${address}&destination_text=${destination}`
+                        `https://travelplanner.duckdns.org/api/googlemaps/placeRoutes/?origin_text=${address}&destination_text=${destination}`
                     );
 
                     const placeRouteData = routeResponse.data;
@@ -1321,7 +1321,7 @@ export default {
 
             try {
                 const infoResponse = await this.$axios.get(
-                    `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
+                    `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
                 );
 
                 const infoData = infoResponse.data;
@@ -1395,7 +1395,7 @@ export default {
                 };
 
                 await fetch(
-                    `http://34.64.132.0/api/planners/${this.planner_id}/update/`,
+                    `https://travelplanner.duckdns.org/api/planners/${this.planner_id}/update/`,
                     {
                         method: "PUT",
                         headers: {

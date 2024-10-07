@@ -240,7 +240,7 @@ export default {
             try {
                 document.getElementById("loading").style.display = "block";
                 const response = await this.$axios.get(
-                    "http://34.64.132.0/api/googlemaps/searchNearPlace/",
+                    "https://travelplanner.duckdns.org/api/googlemaps/searchNearPlace/",
                     {
                         params: {
                             address: this.address,
@@ -259,7 +259,7 @@ export default {
                         if (photoName) {
                             try {
                                 const photoResponse = await this.$axios.get(
-                                    "http://34.64.132.0/api/googlemaps/placePhotos/",
+                                    "https://travelplanner.duckdns.org/api/googlemaps/placePhotos/",
                                     {
                                         params: { place_url: photoName },
                                     }
@@ -313,7 +313,7 @@ export default {
                 document.getElementById("loading").style.display = "block";
                 const searchText = this.textSearch.trim();
                 const response = await this.$axios.get(
-                    "http://34.64.132.0/api/googlemaps/searchNearPlace/",
+                    "https://travelplanner.duckdns.org/api/googlemaps/searchNearPlace/",
                     {
                         params: {
                             address: searchText,
@@ -332,7 +332,7 @@ export default {
                         if (photoName) {
                             try {
                                 const photoResponse = await this.$axios.get(
-                                    "http://34.64.132.0/api/googlemaps/placePhotos/",
+                                    "https://travelplanner.duckdns.org/api/googlemaps/placePhotos/",
                                     {
                                         params: { place_url: photoName },
                                     }
@@ -423,7 +423,7 @@ export default {
                 console.log(`Fetching map for place_id: ${revisePlaceId}`);
 
                 const mapResponse = await this.$axios.get(
-                    `http://34.64.132.0/api/googlemaps/placeDetails/?format=json&place_id=${revisePlaceId}`
+                    `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${revisePlaceId}`
                 );
                 const mapData = mapResponse.data;
 
