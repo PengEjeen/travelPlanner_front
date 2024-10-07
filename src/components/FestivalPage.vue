@@ -165,7 +165,7 @@ export default {
             const searchText = this.searchText;
 
             let url =
-                "http://34.64.132.0/api/polls/products/?api_type=searchFestival1";
+                "https://travelplanner.duckdns.org/api/polls/products/?api_type=searchFestival1";
 
             try {
                 const response = await fetch(url);
@@ -207,7 +207,7 @@ export default {
 
         async fetchDetailData() {
             const detailRequests = this.items.map(async (item) => {
-                const detailUrl = `http://34.64.132.0/api/polls/products/?api_type=detailCommon1&contentId=${item.id}`;
+                const detailUrl = `https://travelplanner.duckdns.org/api/polls/products/?api_type=detailCommon1&contentId=${item.id}`;
 
                 try {
                     const response = await fetch(detailUrl);

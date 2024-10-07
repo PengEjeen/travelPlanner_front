@@ -294,7 +294,7 @@ export default {
                 document.querySelector(".listModalSearchBox input").value = "";
                 this.schedules = [];
                 const response = await this.$axios.get(
-                    "http://34.64.132.0/api/planners/getPlanner/?format=json"
+                    "https://travelplanner.duckdns.org/api/planners/getPlanner/?format=json"
                 );
                 const plannerData = response.data;
 
@@ -315,7 +315,7 @@ export default {
         async logIn() {
             try {
                 const response = await this.$axios.post(
-                    "http://34.64.132.0/api/common/login/",
+                    "https://travelplanner.duckdns.org/api/common/login/",
                     {
                         username: this.loginUserid,
                         password: this.loginPassword,
@@ -363,7 +363,7 @@ export default {
                 }
 
                 const response = await this.$axios.get(
-                    `http://34.64.132.0/api/planners/getPlanner/?format=json&search=${encodeURIComponent(
+                    `https://travelplanner.duckdns.org/api/planners/getPlanner/?format=json&search=${encodeURIComponent(
                         searchInput
                     )}`
                 );
@@ -398,7 +398,7 @@ export default {
         deleteThisList(index) {
             const plannerId = this.getScheduleIndexPlanner_id(index);
 
-            const deleteApi = `http://34.64.132.0/api/planners/${plannerId}/delete/`;
+            const deleteApi = `https://travelplanner.duckdns.org/api/planners/${plannerId}/delete/`;
 
             fetch(deleteApi, {
                 method: "DELETE",
@@ -420,16 +420,19 @@ export default {
             const user_id = this.user_id;
             const title = "여행 제목";
 
-            fetch("http://34.64.132.0/api/planners/planner_create/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    user_id: user_id,
-                    title: title,
-                }),
-            })
+            fetch(
+                "https://travelplanner.duckdns.org/api/planners/planner_create/",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_id: user_id,
+                        title: title,
+                    }),
+                }
+            )
                 .then((response) => response.json())
                 .then((data) => {
                     const planner_id = data.planner_id;
