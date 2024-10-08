@@ -193,7 +193,10 @@
                         <span class="aiName">
                             <img src="@/assets/icons/ai.png" alt="ai 이미지" />:
                         </span>
-                        <div class="conversation" v-html="item[1]"></div>
+                        <!-- <div class="conversation" v-html="item[1]"></div> -->
+                        <div class="conversation">
+                            {{ item[1] }}
+                        </div>
                     </div>
                 </div>
             </div>
