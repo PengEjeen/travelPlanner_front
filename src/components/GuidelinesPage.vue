@@ -193,9 +193,7 @@
                         <span class="aiName">
                             <img src="@/assets/icons/ai.png" alt="ai 이미지" />:
                         </span>
-                        <div class="conversation">
-                            {{ item[1] }}
-                        </div>
+                        <div class="conversation" v-html="item[1]"></div>
                     </div>
                 </div>
             </div>
@@ -240,6 +238,7 @@ export default {
             },
             loading: false,
             error: null,
+            putQuestion: "",
             llmAnswer: [],
         };
     },
@@ -500,12 +499,16 @@ export default {
         async answerQuestion() {
             document.getElementById("loading").style.display = "block";
             try {
-                // const answerResponse = await this.$axios.get(
-                //     `https://travelplanner.duckdns.org/api/googlemaps/placeDetails/?format=json&place_id=${place_id}`
-                // );
+                const answerResponse = await this.$axios.get(
+                    `http://35.192.157.113/generate/?prompt=${this.putQuestion}`
+                );
 
-                // console.log(answerResponse)
-                const aiResponse = "예시 답변";
+                console.log(answerResponse.data.generated_text);
+
+                const aiResponse = answerResponse.data.generated_text.replace(
+                    /\n/g,
+                    "<br>"
+                );
 
                 this.llmAnswer.push([this.putQuestion, aiResponse]);
             } catch (error) {
