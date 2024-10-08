@@ -193,10 +193,7 @@
                         <span class="aiName">
                             <img src="@/assets/icons/ai.png" alt="ai 이미지" />:
                         </span>
-                        <!-- <div class="conversation" v-html="item[1]"></div> -->
-                        <div class="conversation">
-                            {{ item[1] }}
-                        </div>
+                        <div class="conversation" v-html="item[1]"></div>
                     </div>
                 </div>
             </div>
@@ -502,39 +499,14 @@ export default {
         async answerQuestion() {
             document.getElementById("loading").style.display = "block";
             try {
-                // const answerResponse = await this.$axios.get(
-                //     `http://104.155.166.216/generate/?prompt=${this.putQuestion}`
-                // );
+                const answerResponse = await this.$axios.get(
+                    `http://104.155.166.216/generate/?prompt=${this.putQuestion}`
+                );
 
-                // const aiResponse = answerResponse.data.generated_text.replace(
-                //     /\n/g,
-                //     "<br>"
-                // );
-
-                const aiResponse = `
-You're planning a trip to Korea and want to make sure you're dining like a local? That's great! Here's a breakdown of some dining etiquette to keep in mind:
-
-**Chopsticks & Spoons:**
-
-- The Basics: Koreans use both chopsticks and spoons for eating. Chopsticks are for picking up food, while spoons are used for rice and soup.
-- Rice Bowl Etiquette: It's considered rude to stick your chopsticks upright in your rice bowl, as this resembles a funeral ritual.
-- Sharing is Caring: It's common to share dishes among the group, and it's polite to offer food to others.
-
-**Tipping & Bills:**
-
-- No Need to Tip: Tipping is not customary in Korea, as it's already included in the bill.
-
-**Dining Out:**
-
-- Noise Level: Be mindful of the noise level when eating, as it's considered rude to be too loud.
-- Napkin Use: Use a napkin to wipe your mouth, but it's not common to use a napkin to wipe your hands.
-
-**General Tips:**
-
-- Embrace the Experience: Don't be afraid to try new dishes and ask questions about the food.
-- Respect Local Customs: Be aware that dining etiquette may vary slightly in different regions of Korea.
-- Enjoy the Meal: Relax, savor the flavors, and enjoy the company of your dining companions.
-`;
+                const aiResponse = answerResponse.data.generated_text.replace(
+                    /\n/g,
+                    "<br>"
+                );
 
                 this.llmAnswer.push([this.putQuestion, aiResponse]);
             } catch (error) {
