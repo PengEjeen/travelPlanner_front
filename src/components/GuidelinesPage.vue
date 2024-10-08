@@ -500,10 +500,8 @@ export default {
             document.getElementById("loading").style.display = "block";
             try {
                 const answerResponse = await this.$axios.get(
-                    `http://35.192.157.113/generate/?prompt=${this.putQuestion}`
+                    `http://104.155.166.216/generate/?prompt=${this.putQuestion}`
                 );
-
-                console.log(answerResponse.data.generated_text);
 
                 const aiResponse = answerResponse.data.generated_text.replace(
                     /\n/g,
@@ -513,6 +511,7 @@ export default {
                 this.llmAnswer.push([this.putQuestion, aiResponse]);
             } catch (error) {
                 console.error("Error answering question:", error);
+                alert("잘못된 질문 형식입니다.");
             }
             document.getElementById("loading").style.display = "none";
         },
